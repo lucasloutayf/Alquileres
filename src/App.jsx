@@ -208,45 +208,113 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
 };
 
 
-const ExpenseForm = ({ expense, propertyId, onSave, onCancel }) => {
+const ExpenseForm = ({ expense, propertyId, properties, onSave, onCancel }) => {
   const [formData, setFormData] = React.useState(expense || {
-    description: '', category: 'Mantenimiento', amount: '', date: '', propertyId
+    description: '', 
+    category: 'Mantenimiento', 
+    amount: '', 
+    date: '', 
+    propertyId: propertyId || ''
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    // Agregar hora para evitar problemas de zona horaria
+    const [year, month, day] = formData.date.split('-');
+    const dateWithTime = `${year}-${month}-${day}T12:00:00`;
+    
+    onSave({...formData, date: dateWithTime, amount: parseInt(formData.amount)});
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descripción</label>
-        <input type="text" required value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white" />
+        <input 
+          type="text" 
+          required 
+          value={formData.description} 
+          onChange={e => setFormData({...formData, description: e.target.value})} 
+          placeholder="Ej: Reparación de cañería"
+          className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white" 
+        />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* NUEVO: Solo mostrar selector si no hay propertyId predefinido */}
+        {!propertyId && properties && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Propiedad</label>
+            <select 
+              required
+              value={formData.propertyId} 
+              onChange={e => setFormData({...formData, propertyId: e.target.value})} 
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+            >
+              <option value="">Seleccionar propiedad...</option>
+              {properties.map(prop => (
+                <option key={prop.id} value={prop.id}>{prop.address}</option>
+              ))}
+            </select>
+          </div>
+        )}
+        
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categoría</label>
-          <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white">
+          <select 
+            value={formData.category} 
+            onChange={e => setFormData({...formData, category: e.target.value})} 
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+          >
             {EXPENSE_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
           </select>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Monto</label>
-          <input type="number" required value={formData.amount} onChange={e => setFormData({...formData, amount: parseInt(e.target.value)})} className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white" />
+          <input 
+            type="number" 
+            required 
+            min="1"
+            value={formData.amount} 
+            onChange={e => setFormData({...formData, amount: e.target.value})} 
+            placeholder="Ej: 15000"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white" 
+          />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha</label>
-          <input type="date" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white" />
+          <input 
+            type="date" 
+            required 
+            value={formData.date} 
+            onChange={e => setFormData({...formData, date: e.target.value})} 
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white" 
+          />
         </div>
       </div>
+      
       <div className="flex gap-3 justify-end pt-4">
-        <button type="button" onClick={onCancel} className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">Cancelar</button>
-        <button type="submit" className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Guardar</button>
+        <button 
+          type="button" 
+          onClick={onCancel} 
+          className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+        >
+          Cancelar
+        </button>
+        <button 
+          type="submit" 
+          className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+        >
+          Guardar
+        </button>
       </div>
     </form>
   );
 };
+
 
 const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePayment }) => {
   const [amount, setAmount] = React.useState(tenant.rentAmount);
@@ -267,16 +335,20 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
   }, [amount, adjustment, adjustmentType]);
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    const paymentData = {
-      tenantId: tenant.id,
-      baseAmount: parseInt(amount),
-      adjustment: adjustmentType !== 'none' ? parseInt(adjustment) : 0,
-      adjustmentType: adjustmentType !== 'none' ? adjustmentType : null,
-      adjustmentReason: adjustmentType !== 'none' ? adjustmentReason : null,
-      amount: finalAmount,
-      date
-    };
+  e.preventDefault();
+  // Crear fecha con hora del mediodía para evitar problemas de zona horaria
+  const [year, month, day] = date.split('-');
+  const dateWithTime = `${year}-${month}-${day}T12:00:00`;
+  
+  const paymentData = {
+    tenantId: tenant.id,
+    baseAmount: parseInt(amount),
+    adjustment: adjustmentType !== 'none' ? parseInt(adjustment) : 0,
+    adjustmentType: adjustmentType !== 'none' ? adjustmentType : null,
+    adjustmentReason: adjustmentType !== 'none' ? adjustmentReason : null,
+    amount: finalAmount,
+    date: dateWithTime  // Guardar con hora
+  };
     onAddPayment(paymentData);
     // Reset form
     setAmount(tenant.rentAmount);
@@ -975,7 +1047,9 @@ const MonthlyIncomeView = ({ payments, tenants, onBack }) => {
   );
 };
 
-const ExpensesView = ({ expenses, properties, onBack }) => {
+const ExpensesView = ({ expenses, properties, onBack, onAddExpense }) => {
+  const [expenseModalOpen, setExpenseModalOpen] = React.useState(false);
+  
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
   
   const byCategory = React.useMemo(() => {
@@ -993,23 +1067,43 @@ const ExpensesView = ({ expenses, properties, onBack }) => {
     })).sort((a,b) => b.value - a.value);
   }, [expenses, properties]);
 
+  const handleSaveExpense = (expenseData) => {
+    onAddExpense(expenseData);
+    setExpenseModalOpen(false);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <button onClick={onBack} className="flex items-center gap-2 px-4 py-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900 rounded-lg transition-colors">
+        <button 
+          onClick={onBack} 
+          className="flex items-center gap-2 px-4 py-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900 rounded-lg transition-colors"
+        >
           <span className="text-xl">←</span> Volver
         </button>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Gastos</h1>
-        <div></div>
+        
+        {/* BOTÓN NUEVO */}
+        <button 
+          onClick={() => setExpenseModalOpen(true)} 
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+        >
+          ➕ Agregar Gasto
+        </button>
       </div>
 
-      <StatCard title="Gastos Totales" value={`$${totalExpenses.toLocaleString('es-AR')}`} icon="📉" colorClass="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800" />
-
+      <StatCard 
+        title="Gastos Totales" 
+        value={`$${totalExpenses.toLocaleString('es-AR')}`} 
+        icon="💸" 
+        colorClass="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800" 
+      />
+      
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <BarChart data={byCategory} title="Gastos por Categoría" />
         <BarChart data={byProperty} title="Gastos por Propiedad" />
       </div>
-
+      
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
         <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Detalle de Gastos</h2>
         <div className="overflow-x-auto">
@@ -1040,6 +1134,18 @@ const ExpensesView = ({ expenses, properties, onBack }) => {
           </table>
         </div>
       </div>
+
+      {/* MODAL PARA AGREGAR GASTO */}
+      <Modal 
+        isOpen={expenseModalOpen} 
+        onClose={() => setExpenseModalOpen(false)} 
+        title="Agregar Gasto Global"
+      >
+        <ExpenseForm 
+          onSave={handleSaveExpense} 
+          onCancel={() => setExpenseModalOpen(false)} 
+        />
+      </Modal>
     </div>
   );
 };
@@ -1071,22 +1177,22 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
   };
 
   const handleShareWhatsApp = () => {
-    const dueDateFormatted = dueDate.toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
-    let text = `*RECIBO DE PAGO*\n\n*Inquilino:* ${tenant.name}\n*DNI:* ${tenant.dni}\n`;
-    
-    if (payment.adjustmentType) {
-      text += `*Monto Base:* $${payment.baseAmount.toLocaleString('es-AR')}\n`;
-      text += `*${payment.adjustmentType === 'surcharge' ? 'Multa' : 'Descuento'}:* $${payment.adjustment.toLocaleString('es-AR')}\n`;
-      if (payment.adjustmentReason) {
-        text += `*Motivo:* ${payment.adjustmentReason}\n`;
-      }
+  const dueDateFormatted = dueDate.toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
+  let text = `*RECIBO DE PAGO*\n\n*Inquilino:* ${tenant.name}\n`;
+  
+  if (payment.adjustmentType) {
+    text += `*Monto Base:* $${payment.baseAmount.toLocaleString('es-AR')}\n`;
+    text += `*${payment.adjustmentType === 'surcharge' ? 'Multa' : 'Descuento'}:* $${payment.adjustment.toLocaleString('es-AR')}\n`;
+    if (payment.adjustmentReason) {
+      text += `*Motivo:* ${payment.adjustmentReason}\n`;
     }
-    
-    text += `*Total Pagado:* $${payment.amount.toLocaleString('es-AR')}\n*Fecha de Pago:* ${new Date(payment.date).toLocaleDateString('es-AR')}\n*Vence:* ${dueDateFormatted}\n\n¡Gracias por su pago!`;
-    
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
-  };
+  }
+  
+  text += `*Total Pagado:* $${payment.amount.toLocaleString('es-AR')}\n*Fecha de Pago:* ${new Date(payment.date).toLocaleDateString('es-AR')}\n*Vence:* ${dueDateFormatted}\n\n¡Gracias por su pago!`;
+  
+  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank');
+};
 
   return (
     <div className="space-y-4">
@@ -1101,14 +1207,6 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
             <div>
               <p className="text-sm text-gray-600">Inquilino</p>
               <p className="font-bold text-lg">{tenant.name}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">DNI</p>
-              <p className="font-bold text-lg">{tenant.dni}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Teléfono</p>
-              <p className="font-bold text-lg">{tenant.phone}</p>
             </div>
           </div>
         </div>
@@ -1157,7 +1255,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
 
         <div className="border-t-2 border-gray-300 pt-4 text-center text-sm text-gray-600">
           <p>Este recibo certifica el pago del alquiler</p>
-          <p className="mt-2">Fecha de emisión: {new Date().toLocaleDateString('es-AR')}</p>
+          <p>Renta de: 30 días</p>
         </div>
       </div>
 
@@ -1471,14 +1569,20 @@ const CalendarView = ({ tenants, payments, properties, onBack }) => {
 const App = () => {
   const [user, setUser] = React.useState(null);
   const [authLoading, setAuthLoading] = React.useState(true);
+
   const [view, setView] = React.useState('dashboard');
   const [selectedPropertyId, setSelectedPropertyId] = React.useState(null);
   const [theme, setTheme] = React.useState('light');
+  
   const [properties, setProperties] = React.useState([]);
   const [tenants, setTenants] = React.useState([]);
   const [payments, setPayments] = React.useState([]);
   const [expenses, setExpenses] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
 
   // Verificar autenticación
   React.useEffect(() => {
@@ -1620,7 +1724,13 @@ const App = () => {
       case 'income':
         return <MonthlyIncomeView payments={payments} tenants={tenants} onBack={() => setView('dashboard')} />;
       case 'expenses':
-        return <ExpensesView expenses={expenses} properties={properties} onBack={() => setView('dashboard')} />;
+  return <ExpensesView 
+    expenses={expenses} 
+    properties={properties} 
+    onBack={() => setView('dashboard')} 
+    onAddExpense={handleAddExpense}  // Agregar esto
+  />;
+
       default:
         return <Dashboard properties={properties} tenants={tenants} payments={payments} expenses={expenses} onSelectProperty={(id) => { setSelectedPropertyId(id); setView('propertyDetail'); }} />;
     }
@@ -1652,53 +1762,161 @@ const App = () => {
   }
 
   return (
-    <div className="bg-gray-100 dark:bg-gray-900 min-h-screen font-sans">
-      <header className="bg-white dark:bg-gray-800 shadow-md p-4 flex justify-between items-center sticky top-0 z-40">
-  <h1 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">Gestor de Alquileres</h1>
-  
-  <nav className="hidden md:flex gap-4">
-    <button onClick={() => setView('dashboard')} className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Dashboard</button>
-    <button onClick={() => setView('debtors')} className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Deudores</button>
-    <button onClick={() => setView('vacant')} className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Habitaciones</button>
-    <button onClick={() => setView('income')} className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Ingresos</button>
-    <button onClick={() => setView('expenses')} className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Gastos</button>
-    <button 
-    onClick={() => { setView('calendar'); setSearchTerm(''); }} 
-    className={`px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors ${
-    view === 'calendar' 
-  }`}
->
-   Calendario
-</button>
+  <div className="bg-gray-100 dark:bg-gray-900 min-h-screen font-sans">
+    <header className="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50">
+      <div className="px-4 py-3">
+        <div className="flex items-center justify-between gap-2">
+          {/* Logo */}
+          <h1 className="text-xl md:text-2xl font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+            Gestor de Alquileres
+          </h1>
+          
+          {/* Navegación desktop - EN LA MISMA LÍNEA */}
+          <nav className="hidden lg:flex gap-2 flex-1 justify-center">
+            <button 
+              onClick={() => setView('dashboard')} 
+              className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors whitespace-nowrap"
+            >
+              📊 Dashboard
+            </button>
+            <button 
+              onClick={() => setView('debtors')} 
+              className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors whitespace-nowrap"
+            >
+              ⚠️ Deudores
+            </button>
+            <button 
+              onClick={() => setView('vacant')} 
+              className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors whitespace-nowrap"
+            >
+              🏠 Habitaciones
+            </button>
+            <button 
+              onClick={() => setView('income')} 
+              className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors whitespace-nowrap"
+            >
+              💰 Ingresos
+            </button>
+            <button 
+              onClick={() => setView('expenses')} 
+              className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors whitespace-nowrap"
+            >
+              📉 Gastos
+            </button>
+            <button 
+              onClick={() => setView('calendar')} 
+              className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors whitespace-nowrap"
+            >
+              📅 Calendario
+            </button>
+          </nav>
 
-  </nav>
+          {/* Botones de la derecha */}
+          <div className="flex items-center gap-2">
+            <span className="hidden xl:block text-sm text-gray-600 dark:text-gray-400">
+              {user?.email}
+            </span>
+            
+            <button 
+              onClick={toggleTheme} 
+              className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+            >
+              {theme === 'light' ? 
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                </svg> :
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+              }
+            </button>
 
-  <div className="flex items-center gap-3">
-    <span className="text-sm text-gray-600 dark:text-gray-400 hidden md:block">
-      {user?.email}
-    </span>
-    
-    <button onClick={toggleTheme} className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-      {theme === 'light' ? 
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg> :
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-      }
-    </button>
+            <button 
+              onClick={handleLogout} 
+              className="hidden md:block px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium"
+            >
+              Salir
+            </button>
 
-    <button 
-      onClick={handleLogout} 
-      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
-    >
-      Salir
-    </button>
+            {/* BOTÓN HAMBURGUESA - SOLO TABLETS Y MÓVILES */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {mobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* MENÚ MÓVIL/TABLET DESPLEGABLE */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <nav className="flex flex-col p-2">
+            <button 
+              onClick={() => { setView('dashboard'); setMobileMenuOpen(false); }} 
+              className="px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+            >
+              📊 Dashboard
+            </button>
+            <button 
+              onClick={() => { setView('debtors'); setMobileMenuOpen(false); }} 
+              className="px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+            >
+              ⚠️ Deudores
+            </button>
+            <button 
+              onClick={() => { setView('vacant'); setMobileMenuOpen(false); }} 
+              className="px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+            >
+              🏠 Habitaciones
+            </button>
+            <button 
+              onClick={() => { setView('income'); setMobileMenuOpen(false); }} 
+              className="px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+            >
+              💰 Ingresos
+            </button>
+            <button 
+              onClick={() => { setView('expenses'); setMobileMenuOpen(false); }} 
+              className="px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+            >
+              📉 Gastos
+            </button>
+            <button 
+              onClick={() => { setView('calendar'); setMobileMenuOpen(false); }} 
+              className="px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+            >
+              📅 Calendario
+            </button>
+            <div className="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
+              <div className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">
+                {user?.email}
+              </div>
+              <button 
+                onClick={handleLogout} 
+                className="w-full px-4 py-3 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900 rounded-lg font-medium"
+              >
+                🚪 Cerrar Sesión
+              </button>
+            </div>
+          </nav>
+        </div>
+      )}
+    </header>
+
+    <main className="p-4 md:p-8">
+      {renderContent()}
+    </main>
   </div>
-</header>
+);
 
-      <main className="p-4 md:p-8">
-        {renderContent()}
-      </main>
-    </div>
-  );
 };
 
 export default App;
