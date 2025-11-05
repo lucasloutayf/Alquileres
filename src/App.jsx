@@ -1047,7 +1047,7 @@ const MonthlyIncomeView = ({ payments, tenants, onBack }) => {
   );
 };
 
-const ExpensesView = ({ expenses, properties, onBack, onAddExpense }) => {
+const ExpensesView = ({ expenses, properties, onBack, onAddExpense, onDeleteExpense }) => {
   const [expenseModalOpen, setExpenseModalOpen] = React.useState(false);
   
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
@@ -1109,28 +1109,39 @@ const ExpensesView = ({ expenses, properties, onBack, onAddExpense }) => {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Descripción</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Propiedad</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Categoría</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Monto</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fecha</th>
-              </tr>
-            </thead>
+  <tr>
+    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Descripción</th>
+    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Propiedad</th>
+    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Categoría</th>
+    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Monto</th>
+    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fecha</th>
+    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acciones</th>
+  </tr>
+</thead>
+
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {expenses.sort((a,b) => new Date(b.date) - new Date(a.date)).map(expense => {
-                const property = properties.find(p => p.id === expense.propertyId);
-                return (
-                  <tr key={expense.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
-                    <td className="px-4 py-4 text-gray-900 dark:text-white">{expense.description}</td>
-                    <td className="px-4 py-4 text-gray-700 dark:text-gray-300">{property?.address}</td>
-                    <td className="px-4 py-4 text-gray-700 dark:text-gray-300">{expense.category}</td>
-                    <td className="px-4 py-4 text-gray-900 dark:text-white font-semibold">${expense.amount.toLocaleString('es-AR')}</td>
-                    <td className="px-4 py-4 text-gray-700 dark:text-gray-300">{new Date(expense.date).toLocaleDateString('es-AR')}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
+  {expenses.sort((a,b) => new Date(b.date) - new Date(a.date)).map(expense => {
+    const property = properties.find(p => p.id === expense.propertyId);
+    return (
+      <tr key={expense.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
+        <td className="px-4 py-4 text-gray-900 dark:text-white">{expense.description}</td>
+        <td className="px-4 py-4 text-gray-700 dark:text-gray-300">{property?.address}</td>
+        <td className="px-4 py-4 text-gray-700 dark:text-gray-300">{expense.category}</td>
+        <td className="px-4 py-4 text-gray-900 dark:text-white font-semibold">${expense.amount.toLocaleString('es-AR')}</td>
+        <td className="px-4 py-4 text-gray-700 dark:text-gray-300">{new Date(expense.date).toLocaleDateString('es-AR')}</td>
+        <td className="px-4 py-4">
+          <button
+            onClick={() => onDeleteExpense(expense.id)}
+            className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+          >
+            🗑️ Eliminar
+          </button>
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
+
           </table>
         </div>
       </div>
@@ -1176,26 +1187,81 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
     window.print();
   };
 
-  const handleShareWhatsApp = () => {
-  const dueDateFormatted = dueDate.toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
-  let text = `*RECIBO DE PAGO*\n\n*Inquilino:* ${tenant.name}\n`;
-  
-  if (payment.adjustmentType) {
-    text += `*Monto Base:* $${payment.baseAmount.toLocaleString('es-AR')}\n`;
-    text += `*${payment.adjustmentType === 'surcharge' ? 'Multa' : 'Descuento'}:* $${payment.adjustment.toLocaleString('es-AR')}\n`;
-    if (payment.adjustmentReason) {
-      text += `*Motivo:* ${payment.adjustmentReason}\n`;
+  // NUEVO: Copiar imagen al portapapeles
+  const handleCopyImage = async () => {
+    try {
+      const html2canvas = (await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm')).default;
+      const element = receiptRef.current;
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+      });
+      
+      canvas.toBlob(async (blob) => {
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': blob })
+          ]);
+          alert('✅ ¡Imagen copiada al portapapeles!\n\nAhora podés pegarla (Ctrl+V) en WhatsApp Web, Telegram, email, etc.');
+        } catch (err) {
+          console.error('Error al copiar:', err);
+          alert('❌ No se pudo copiar la imagen.\n\nIntentá usar "Descargar Imagen" y luego adjuntarla manualmente.');
+        }
+      }, 'image/png');
+      
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error al procesar la imagen');
     }
-  }
-  
-  text += `*Total Pagado:* $${payment.amount.toLocaleString('es-AR')}\n*Fecha de Pago:* ${new Date(payment.date).toLocaleDateString('es-AR')}\n*Vence:* ${dueDateFormatted}\n\n¡Gracias por su pago!`;
-  
-  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-  window.open(url, '_blank');
-};
+  };
+
+  // NUEVO: WhatsApp con Web Share API (solo móvil)
+  const handleShareWhatsAppMobile = async () => {
+    try {
+      const html2canvas = (await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm')).default;
+      const element = receiptRef.current;
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+      });
+      
+      canvas.toBlob(async (blob) => {
+        const file = new File([blob], `recibo-${tenant.name}-${payment.date}.png`, { type: 'image/png' });
+        
+        // Verificar si el dispositivo soporta compartir archivos
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: 'Recibo de Pago',
+              text: `Recibo de pago - ${tenant.name} - $${payment.amount.toLocaleString('es-AR')}`,
+            });
+          } catch (error) {
+            if (error.name !== 'AbortError') {
+              console.error('Error al compartir:', error);
+              alert('❌ Error al compartir. Usá "Descargar Imagen" en su lugar.');
+            }
+          }
+        } else {
+          // Fallback para desktop o navegadores no compatibles
+          alert(
+            '⚠️ Esta función solo funciona en dispositivos móviles.\n\n' +
+            '💡 Alternativas en computadora:\n' +
+            '1. Usá "Copiar Imagen" y pegá en WhatsApp Web (Ctrl+V)\n' +
+            '2. Usá "Descargar Imagen" y adjuntá manualmente'
+          );
+        }
+      }, 'image/png');
+      
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error al procesar el recibo');
+    }
+  };
 
   return (
     <div className="space-y-4">
+      {/* Recibo para mostrar/imprimir */}
       <div ref={receiptRef} className="bg-white p-8 rounded-lg border-2 border-gray-300 print:border-black">
         <div className="text-center mb-6">
           <h2 className="text-3xl font-bold text-gray-900">RECIBO DE PAGO</h2>
@@ -1203,11 +1269,9 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
         </div>
         
         <div className="border-t-2 border-b-2 border-gray-300 py-4 my-4">
-          <div className="grid grid-cols-2 gap-4 text-gray-800">
-            <div>
-              <p className="text-sm text-gray-600">Inquilino</p>
-              <p className="font-bold text-lg">{tenant.name}</p>
-            </div>
+          <div className="text-center">
+            <p className="text-sm text-gray-600 mb-2">Inquilino</p>
+            <p className="font-bold text-2xl text-gray-900">{tenant.name}</p>
           </div>
         </div>
 
@@ -1238,9 +1302,16 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
         </div>
 
         <div className="mb-6">
-          <div>
-            <p className="text-sm text-gray-600 text-center">Fecha de Pago</p>
-            <p className="font-bold text-center text-lg text-gray-800">{new Date(payment.date).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+          <div className="text-center">
+            <p className="text-sm text-gray-600">Fecha de Pago</p>
+            <p className="font-bold text-lg text-gray-800">
+              {new Date(payment.date).toLocaleDateString('es-AR', { 
+                day: 'numeric', 
+                month: 'long', 
+                year: 'numeric' 
+              })}
+            </p>
+            <p className="text-sm text-gray-500 mt-2">Renta de: 30 días</p>
           </div>
         </div>
 
@@ -1255,27 +1326,52 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
 
         <div className="border-t-2 border-gray-300 pt-4 text-center text-sm text-gray-600">
           <p>Este recibo certifica el pago del alquiler</p>
-          <p>Renta de: 30 días</p>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3 print:hidden">
-        <button onClick={handleDownloadImage} className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">
-          📥 Descargar Imagen
+      {/* Botones de acción - ACTUALIZADOS */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 print:hidden">
+        <button 
+          onClick={handleDownloadImage}
+          className="px-4 md:px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm md:text-base"
+        >
+          📥 Descargar
         </button>
-        <button onClick={handlePrint} className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold">
-          🖨️ Imprimir
+        
+        <button 
+          onClick={handleCopyImage}
+          className="px-4 md:px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold text-sm md:text-base"
+        >
+          📋 Copiar
         </button>
-        <button onClick={handleShareWhatsApp} className="flex-1 px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-semibold">
+        
+        <button 
+          onClick={handleShareWhatsAppMobile}
+          className="px-4 md:px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-sm md:text-base"
+        >
           💬 WhatsApp
         </button>
-        <button onClick={onClose} className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 font-semibold">
-          ← Volver
+        
+        <button 
+          onClick={handlePrint}
+          className="px-4 md:px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold text-sm md:text-base"
+        >
+          🖨️ Imprimir
         </button>
       </div>
+
+    
+
+      <button 
+        onClick={onClose}
+        className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 font-semibold print:hidden"
+      >
+        ← Volver
+      </button>
     </div>
   );
 };
+
 
 const CalendarView = ({ tenants, payments, properties, onBack }) => {
   const [currentDate, setCurrentDate] = React.useState(new Date());
@@ -1647,12 +1743,21 @@ const App = () => {
   };
 
   const handleDeleteTenant = async (tenantId) => {
-    try {
-      await deleteDoc(doc(db, 'tenants', tenantId));
-    } catch (error) {
-      alert('Error al eliminar inquilino: ' + error.message);
+  try {
+    // 1. Primero borrar todos los pagos del inquilino
+    const tenantPayments = payments.filter(p => p.tenantId === tenantId);
+    for (const payment of tenantPayments) {
+      await deleteDoc(doc(db, 'payments', payment.id));
     }
-  };
+    
+    // 2. Luego borrar el inquilino
+    await deleteDoc(doc(db, 'tenants', tenantId));
+    
+  } catch (error) {
+    alert('❌ Error al eliminar inquilino: ' + error.message);
+  }
+};
+
 
   const handleAddPayment = async (paymentData) => {
     try {
@@ -1728,8 +1833,10 @@ const App = () => {
     expenses={expenses} 
     properties={properties} 
     onBack={() => setView('dashboard')} 
-    onAddExpense={handleAddExpense}  // Agregar esto
+    onAddExpense={handleAddExpense}
+    onDeleteExpense={handleDeleteExpense}  // ← AGREGAR ESTO
   />;
+
 
       default:
         return <Dashboard properties={properties} tenants={tenants} payments={payments} expenses={expenses} onSelectProperty={(id) => { setSelectedPropertyId(id); setView('propertyDetail'); }} />;
