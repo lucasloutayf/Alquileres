@@ -1163,6 +1163,7 @@ const ExpensesView = ({ expenses, properties, onBack, onAddExpense, onDeleteExpe
 
 const ReceiptGenerator = ({ payment, tenant, onClose }) => {
   const receiptRef = React.useRef();
+  const [isSharing, setIsSharing] = React.useState(false);
 
   // Calcular fecha de vencimiento (30 días después del pago)
   const paymentDate = new Date(payment.date);
@@ -1187,7 +1188,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
     window.print();
   };
 
-  // NUEVO: Copiar imagen al portapapeles
+  // Copiar al portapapeles
   const handleCopyImage = async () => {
     try {
       const html2canvas = (await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm')).default;
@@ -1202,66 +1203,102 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
           await navigator.clipboard.write([
             new ClipboardItem({ 'image/png': blob })
           ]);
-          alert('✅ ¡Imagen copiada al portapapeles!\n\nAhora podés pegarla (Ctrl+V) en WhatsApp Web, Telegram, email, etc.');
+          alert('✅ ¡Imagen copiada!\n\nPegá en WhatsApp Web con Ctrl+V');
         } catch (err) {
-          console.error('Error al copiar:', err);
-          alert('❌ No se pudo copiar la imagen.\n\nIntentá usar "Descargar Imagen" y luego adjuntarla manualmente.');
+          alert('❌ No se pudo copiar. Usá "Descargar" en su lugar.');
         }
       }, 'image/png');
       
     } catch (error) {
-      console.error('Error:', error);
-      alert('❌ Error al procesar la imagen');
+      alert('❌ Error al copiar la imagen');
     }
   };
 
-  // NUEVO: WhatsApp con Web Share API (solo móvil)
-  const handleShareWhatsAppMobile = async () => {
+  // COMPARTIR POR WHATSAPP - VERSIÓN DEFINITIVA QUE FUNCIONA
+  const handleShareWhatsApp = async () => {
+    // Verificar soporte
+    if (!navigator.share) {
+      alert(
+        '⚠️ Tu navegador no soporta compartir.\n\n' +
+        '💡 Alternativas:\n' +
+        '• Descargá la imagen y compartila manualmente\n' +
+        '• Usá el botón "Copiar" y pegá en WhatsApp Web'
+      );
+      return;
+    }
+
+    setIsSharing(true);
+
     try {
+      // Generar canvas
       const html2canvas = (await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm')).default;
-      const element = receiptRef.current;
-      const canvas = await html2canvas(element, {
+      const canvas = await html2canvas(receiptRef.current, {
         scale: 2,
         backgroundColor: '#ffffff',
+        logging: false,
       });
-      
+
+      // Convertir a blob usando callback (NO async/await aquí)
       canvas.toBlob(async (blob) => {
-        const file = new File([blob], `recibo-${tenant.name}-${payment.date}.png`, { type: 'image/png' });
-        
-        // Verificar si el dispositivo soporta compartir archivos
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({
-              files: [file],
-              title: 'Recibo de Pago',
-              text: `Recibo de pago - ${tenant.name} - $${payment.amount.toLocaleString('es-AR')}`,
-            });
-          } catch (error) {
-            if (error.name !== 'AbortError') {
-              console.error('Error al compartir:', error);
-              alert('❌ Error al compartir. Usá "Descargar Imagen" en su lugar.');
-            }
+        try {
+          if (!blob) {
+            throw new Error('No se pudo generar la imagen');
           }
-        } else {
-          // Fallback para desktop o navegadores no compatibles
-          alert(
-            '⚠️ Esta función solo funciona en dispositivos móviles.\n\n' +
-            '💡 Alternativas en computadora:\n' +
-            '1. Usá "Copiar Imagen" y pegá en WhatsApp Web (Ctrl+V)\n' +
-            '2. Usá "Descargar Imagen" y adjuntá manualmente'
-          );
+
+          // Crear archivo
+          const timestamp = Date.now();
+          const filename = `recibo_${tenant.name.replace(/\s+/g, '_')}_${timestamp}.png`;
+          const file = new File([blob], filename, { 
+            type: 'image/png',
+            lastModified: timestamp
+          });
+
+          // Verificar si puede compartir archivos
+          if (navigator.canShare && !navigator.canShare({ files: [file] })) {
+            throw new Error('Este dispositivo no puede compartir archivos');
+          }
+
+          // Compartir
+          await navigator.share({
+            files: [file],
+            title: 'Recibo de Pago',
+            text: `Recibo de pago - ${tenant.name} - $${payment.amount.toLocaleString('es-AR')}`
+          });
+
+          // Si llega acá, el usuario completó el compartir
+          console.log('✅ Compartido exitosamente');
+
+        } catch (shareError) {
+          if (shareError.name === 'AbortError') {
+            // Usuario canceló, no hacer nada
+            console.log('Usuario canceló');
+          } else {
+            console.error('Error al compartir:', shareError);
+            alert(
+              '❌ No se pudo compartir.\n\n' +
+              '💡 La imagen se descargará. Podés:\n' +
+              '1. Abrí WhatsApp\n' +
+              '2. Adjuntá la imagen desde tu galería\n' +
+              '3. Enviá al contacto'
+            );
+            // Descargar como fallback
+            handleDownloadImage();
+          }
+        } finally {
+          setIsSharing(false);
         }
-      }, 'image/png');
-      
+      }, 'image/png', 1.0);
+
     } catch (error) {
-      console.error('Error:', error);
-      alert('❌ Error al procesar el recibo');
+      console.error('Error general:', error);
+      alert('❌ Error al generar el recibo. Intentá de nuevo.');
+      setIsSharing(false);
     }
   };
 
   return (
     <div className="space-y-4">
-      {/* Recibo para mostrar/imprimir */}
+      {/* Recibo visual */}
       <div ref={receiptRef} className="bg-white p-8 rounded-lg border-2 border-gray-300 print:border-black">
         <div className="text-center mb-6">
           <h2 className="text-3xl font-bold text-gray-900">RECIBO DE PAGO</h2>
@@ -1329,48 +1366,54 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
         </div>
       </div>
 
-      {/* Botones de acción - ACTUALIZADOS */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 print:hidden">
+      {/* Botones */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 print:hidden">
         <button 
           onClick={handleDownloadImage}
-          className="px-4 md:px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm md:text-base"
+          className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm flex items-center justify-center gap-2"
         >
-          📥 Descargar
+          <span>📥</span>
+          <span className="hidden sm:inline">Descargar</span>
         </button>
         
         <button 
           onClick={handleCopyImage}
-          className="px-4 md:px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold text-sm md:text-base"
+          className="px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold text-sm flex items-center justify-center gap-2"
         >
-          📋 Copiar
+          <span>📋</span>
+          <span className="hidden sm:inline">Copiar</span>
         </button>
         
         <button 
-          onClick={handleShareWhatsAppMobile}
-          className="px-4 md:px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-sm md:text-base"
+          onClick={handleShareWhatsApp}
+          disabled={isSharing}
+          className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          💬 WhatsApp
+          <span>{isSharing ? '⏳' : '💬'}</span>
+          <span className="hidden sm:inline">{isSharing ? 'Generando...' : 'Compartir'}</span>
         </button>
         
         <button 
           onClick={handlePrint}
-          className="px-4 md:px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold text-sm md:text-base"
+          className="px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold text-sm flex items-center justify-center gap-2"
         >
-          🖨️ Imprimir
+          <span>🖨️</span>
+          <span className="hidden sm:inline">Imprimir</span>
         </button>
       </div>
 
-    
+
 
       <button 
         onClick={onClose}
-        className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 font-semibold print:hidden"
+        className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 dark:text-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 font-semibold print:hidden"
       >
         ← Volver
       </button>
     </div>
   );
 };
+
 
 
 const CalendarView = ({ tenants, payments, properties, onBack }) => {
