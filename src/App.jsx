@@ -1188,105 +1188,76 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
   };
 
   // NUEVO: Copiar imagen al portapapeles
-  const handleShareWhatsAppMobile = async () => {
-  try {
-    // Mostrar indicador de carga
-    const loadingAlert = alert('⏳ Generando imagen, por favor esperá...');
-    
-    const html2canvas = (await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm')).default;
-    const element = receiptRef.current;
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      backgroundColor: '#ffffff',
-      useCORS: true,
-      logging: false,
-    });
-    
-    // Convertir a blob
-    const blob = await new Promise((resolve) => {
-      canvas.toBlob(resolve, 'image/png', 1.0);
-    });
-    
-    if (!blob) {
-      throw new Error('No se pudo generar la imagen');
-    }
-    
-    // Crear el archivo
-    const fileName = `recibo-${tenant.name}-${new Date().getTime()}.png`;
-    const file = new File([blob], fileName, { 
-      type: 'image/png',
-      lastModified: new Date().getTime()
-    });
-    
-    // Verificar soporte de Web Share API
-    if (!navigator.share) {
-      alert(
-        '⚠️ Tu navegador no soporta compartir archivos.\n\n' +
-        '💡 Alternativas:\n' +
-        '1. Usá el botón "Copiar" y pegá en WhatsApp\n' +
-        '2. Usá el botón "Descargar" y adjuntá manualmente'
-      );
-      return;
-    }
-    
-    // Verificar si puede compartir archivos
-    const canShareFiles = navigator.canShare && navigator.canShare({ files: [file] });
-    
-    if (!canShareFiles) {
-      alert(
-        '⚠️ Tu dispositivo no puede compartir archivos directamente.\n\n' +
-        '💡 Usá el botón "Descargar" y luego:\n' +
-        '1. Abrí WhatsApp\n' +
-        '2. Adjuntá la imagen desde tu galería\n' +
-        '3. Enviá al contacto deseado'
-      );
-      // Descargar automáticamente como fallback
-      await handleDownloadImage();
-      return;
-    }
-    
-    // Intentar compartir
+  const handleCopyImage = async () => {
     try {
-      await navigator.share({
-        files: [file],
-        title: 'Recibo de Pago',
-        text: `Recibo de pago - ${tenant.name}`,
+      const html2canvas = (await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm')).default;
+      const element = receiptRef.current;
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: '#ffffff',
       });
       
-      // Éxito (solo se ejecuta si el usuario completó el compartir)
-      console.log('✅ Recibo compartido exitosamente');
+      canvas.toBlob(async (blob) => {
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': blob })
+          ]);
+          alert('✅ ¡Imagen copiada al portapapeles!\n\nAhora podés pegarla (Ctrl+V) en WhatsApp Web, Telegram, email, etc.');
+        } catch (err) {
+          console.error('Error al copiar:', err);
+          alert('❌ No se pudo copiar la imagen.\n\nIntentá usar "Descargar Imagen" y luego adjuntarla manualmente.');
+        }
+      }, 'image/png');
       
-    } catch (shareError) {
-      // El usuario canceló o hubo un error
-      if (shareError.name === 'AbortError') {
-        // Usuario canceló, no hacer nada
-        console.log('Usuario canceló el compartir');
-      } else if (shareError.name === 'NotAllowedError') {
-        alert(
-          '⚠️ Permiso denegado para compartir.\n\n' +
-          'Descargá la imagen y compartila manualmente.'
-        );
-        await handleDownloadImage();
-      } else {
-        // Otro error
-        console.error('Error al compartir:', shareError);
-        alert(
-          '❌ Error al compartir: ' + shareError.message + '\n\n' +
-          'La imagen se descargará automáticamente.'
-        );
-        await handleDownloadImage();
-      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error al procesar la imagen');
     }
-    
-  } catch (error) {
-    console.error('Error general:', error);
-    alert(
-      '❌ Error al generar el recibo.\n\n' +
-      'Intentá usar el botón "Descargar" en su lugar.'
-    );
-  }
-};
+  };
 
+  // NUEVO: WhatsApp con Web Share API (solo móvil)
+  const handleShareWhatsAppMobile = async () => {
+    try {
+      const html2canvas = (await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm')).default;
+      const element = receiptRef.current;
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+      });
+      
+      canvas.toBlob(async (blob) => {
+        const file = new File([blob], `recibo-${tenant.name}-${payment.date}.png`, { type: 'image/png' });
+        
+        // Verificar si el dispositivo soporta compartir archivos
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: 'Recibo de Pago',
+              text: `Recibo de pago - ${tenant.name} - $${payment.amount.toLocaleString('es-AR')}`,
+            });
+          } catch (error) {
+            if (error.name !== 'AbortError') {
+              console.error('Error al compartir:', error);
+              alert('❌ Error al compartir. Usá "Descargar Imagen" en su lugar.');
+            }
+          }
+        } else {
+          // Fallback para desktop o navegadores no compatibles
+          alert(
+            '⚠️ Esta función solo funciona en dispositivos móviles.\n\n' +
+            '💡 Alternativas en computadora:\n' +
+            '1. Usá "Copiar Imagen" y pegá en WhatsApp Web (Ctrl+V)\n' +
+            '2. Usá "Descargar Imagen" y adjuntá manualmente'
+          );
+        }
+      }, 'image/png');
+      
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error al procesar el recibo');
+    }
+  };
 
   return (
     <div className="space-y-4">
