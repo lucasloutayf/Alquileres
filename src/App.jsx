@@ -1169,34 +1169,46 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
   const paymentDate = new Date(payment.date);
   const dueDate = new Date(paymentDate);
   dueDate.setDate(dueDate.getDate() + 30);
+  
+  // Función para generar canvas optimizado
+  const generateCanvas = async () => {
+  const html2canvas = (await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm')).default;
+  const element = receiptRef.current;
+  
+  const canvas = await html2canvas(element, {
+    scale: 2,
+    backgroundColor: '#ffffff',
+    logging: false,
+    useCORS: true,
+    allowTaint: true,
+  });
+  
+  return canvas;
+};
+
+
 
   const handleDownloadImage = async () => {
-    const html2canvas = (await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm')).default;
-    const element = receiptRef.current;
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      backgroundColor: '#ffffff',
-    });
-    const image = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.download = `recibo-${tenant.name}-${payment.date}.png`;
-    link.href = image;
-    link.click();
+    try {
+      const canvas = await generateCanvas();
+      const image = canvas.toDataURL('image/png', 1.0);
+      const link = document.createElement('a');
+      link.download = `recibo-${tenant.name}-${payment.date}.png`;
+      link.href = image;
+      link.click();
+    } catch (error) {
+      console.error('Error al descargar:', error);
+      alert('❌ Error al generar la imagen');
+    }
   };
 
   const handlePrint = () => {
     window.print();
   };
 
-  // Copiar al portapapeles
   const handleCopyImage = async () => {
     try {
-      const html2canvas = (await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm')).default;
-      const element = receiptRef.current;
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        backgroundColor: '#ffffff',
-      });
+      const canvas = await generateCanvas();
       
       canvas.toBlob(async (blob) => {
         try {
@@ -1207,45 +1219,30 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
         } catch (err) {
           alert('❌ No se pudo copiar. Usá "Descargar" en su lugar.');
         }
-      }, 'image/png');
+      }, 'image/png', 1.0);
       
     } catch (error) {
       alert('❌ Error al copiar la imagen');
     }
   };
 
-  // COMPARTIR POR WHATSAPP - VERSIÓN DEFINITIVA QUE FUNCIONA
   const handleShareWhatsApp = async () => {
-    // Verificar soporte
     if (!navigator.share) {
-      alert(
-        '⚠️ Tu navegador no soporta compartir.\n\n' +
-        '💡 Alternativas:\n' +
-        '• Descargá la imagen y compartila manualmente\n' +
-        '• Usá el botón "Copiar" y pegá en WhatsApp Web'
-      );
+      alert('⚠️ Tu navegador no soporta compartir. Usá "Descargar" o "Copiar".');
       return;
     }
 
     setIsSharing(true);
 
     try {
-      // Generar canvas
-      const html2canvas = (await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm')).default;
-      const canvas = await html2canvas(receiptRef.current, {
-        scale: 2,
-        backgroundColor: '#ffffff',
-        logging: false,
-      });
+      const canvas = await generateCanvas();
 
-      // Convertir a blob usando callback (NO async/await aquí)
       canvas.toBlob(async (blob) => {
         try {
           if (!blob) {
             throw new Error('No se pudo generar la imagen');
           }
 
-          // Crear archivo
           const timestamp = Date.now();
           const filename = `recibo_${tenant.name.replace(/\s+/g, '_')}_${timestamp}.png`;
           const file = new File([blob], filename, { 
@@ -1253,36 +1250,25 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
             lastModified: timestamp
           });
 
-          // Verificar si puede compartir archivos
-          if (navigator.canShare && !navigator.canShare({ files: [file] })) {
-            throw new Error('Este dispositivo no puede compartir archivos');
-          }
-
-          // Compartir
           await navigator.share({
             files: [file],
             title: 'Recibo de Pago',
-            text: `Recibo de pago - ${tenant.name} - $${payment.amount.toLocaleString('es-AR')}`
+            text: `Recibo - ${tenant.name} - $${payment.amount.toLocaleString('es-AR')}`
           });
 
-          // Si llega acá, el usuario completó el compartir
           console.log('✅ Compartido exitosamente');
 
         } catch (shareError) {
           if (shareError.name === 'AbortError') {
-            // Usuario canceló, no hacer nada
             console.log('Usuario canceló');
           } else {
             console.error('Error al compartir:', shareError);
-            alert(
-              '❌ No se pudo compartir.\n\n' +
-              '💡 La imagen se descargará. Podés:\n' +
-              '1. Abrí WhatsApp\n' +
-              '2. Adjuntá la imagen desde tu galería\n' +
-              '3. Enviá al contacto'
-            );
-            // Descargar como fallback
-            handleDownloadImage();
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = URL.createObjectURL(blob);
+            link.click();
+            URL.revokeObjectURL(link.href);
+            alert('❌ No se pudo compartir. La imagen se descargó.');
           }
         } finally {
           setIsSharing(false);
@@ -1291,7 +1277,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
 
     } catch (error) {
       console.error('Error general:', error);
-      alert('❌ Error al generar el recibo. Intentá de nuevo.');
+      alert('❌ Error al generar el recibo.');
       setIsSharing(false);
     }
   };
@@ -1299,7 +1285,8 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
   return (
     <div className="space-y-4">
       {/* Recibo visual */}
-      <div ref={receiptRef} className="bg-white p-8 rounded-lg border-2 border-gray-300 print:border-black">
+      <div ref={receiptRef} className="bg-white rounded-lg border-2 border-gray-300 print:border-black mx-auto" style={{ maxWidth: '600px', padding: '2rem' }}>
+
         <div className="text-center mb-6">
           <h2 className="text-3xl font-bold text-gray-900">RECIBO DE PAGO</h2>
           <p className="text-gray-600 mt-2">Comprobante de alquiler</p>
@@ -1334,8 +1321,8 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
         )}
 
         <div className="my-6 text-center bg-green-50 p-6 rounded-lg">
-          <p className="text-gray-600 mb-2">Total Pagado</p>
-          <p className="text-5xl font-bold text-green-600">${payment.amount.toLocaleString('es-AR')}</p>
+          <p className="text-gray-600 mb-2" >Total Pagado</p>
+          <p className="text-4xl font-bold text-green-600">${payment.amount.toLocaleString('es-AR')}</p>
         </div>
 
         <div className="mb-6">
@@ -1402,8 +1389,6 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
         </button>
       </div>
 
-
-
       <button 
         onClick={onClose}
         className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 dark:text-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 font-semibold print:hidden"
@@ -1413,6 +1398,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
     </div>
   );
 };
+
 
 
 
