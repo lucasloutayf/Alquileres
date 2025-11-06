@@ -1321,9 +1321,12 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
         )}
 
         <div className="my-6 text-center bg-green-50 p-6 rounded-lg">
-          <p className="text-gray-600 mb-2" >Total Pagado</p>
-          <p className="text-4xl font-bold text-green-600">${payment.amount.toLocaleString('es-AR')}</p>
+          <p className="text-gray-600 mb-2">Total Pagado</p>
+          <p className="text-4xl md:text-5xl font-bold text-green-600 break-words px-2">
+          ${payment.amount.toLocaleString('es-AR')}
+          </p>
         </div>
+
 
         <div className="mb-6">
           <div className="text-center">
