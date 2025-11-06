@@ -1175,16 +1175,22 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
   const html2canvas = (await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm')).default;
   const element = receiptRef.current;
   
+  // Dimensiones FIJAS para la imagen (siempre igual)
+  const fixedWidth = 600; // Ancho fijo en píxeles
+  
   const canvas = await html2canvas(element, {
-    scale: 2,
+    scale: 2, // Calidad 2x
     backgroundColor: '#ffffff',
     logging: false,
     useCORS: true,
     allowTaint: true,
+    width: fixedWidth,
+    windowWidth: fixedWidth,
   });
   
   return canvas;
 };
+
 
 
 
@@ -1285,7 +1291,8 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
   return (
     <div className="space-y-4">
       {/* Recibo visual */}
-      <div ref={receiptRef} className="bg-white rounded-lg border-2 border-gray-300 print:border-black mx-auto" style={{ maxWidth: '600px', padding: '2rem' }}>
+      <div ref={receiptRef} className="bg-white rounded-lg border-2 border-gray-300 print:border-black" style={{ width: '600px', padding: '2rem', margin: '0 auto' }}>
+
 
         <div className="text-center mb-6">
           <h2 className="text-3xl font-bold text-gray-900">RECIBO DE PAGO</h2>
@@ -1322,7 +1329,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
 
         <div className="my-6 text-center bg-green-50 p-6 rounded-lg">
           <p className="text-gray-600 mb-2">Total Pagado</p>
-          <p className="text-4xl md:text-5xl font-bold text-green-600 break-words px-2">
+          <p className="text-4xl md:text-5xl font-bold text-green-600 px-2">
           ${payment.amount.toLocaleString('es-AR')}
           </p>
         </div>
