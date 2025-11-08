@@ -320,6 +320,7 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
   const [amount, setAmount] = React.useState(tenant.rentAmount);
   const [date, setDate] = React.useState(new Date().toISOString().split('T')[0]);
   const [adjustment, setAdjustment] = React.useState(0);
+  const [dueDate, setDueDate] = React.useState(new Date().toISOString().split('T')[0]);
   const [adjustmentReason, setAdjustmentReason] = React.useState('');
   const [adjustmentType, setAdjustmentType] = React.useState('none'); // 'none', 'surcharge', 'discount'
   const [showReceipt, setShowReceipt] = React.useState(false);
@@ -347,8 +348,10 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
     adjustmentType: adjustmentType !== 'none' ? adjustmentType : null,
     adjustmentReason: adjustmentType !== 'none' ? adjustmentReason : null,
     amount: finalAmount,
-    date: dateWithTime  // Guardar con hora
-  };
+    date: dateWithTime,
+    dueDate: dueDate + 'T12:00:00',  // AGREGAR ESTA LÍNEA
+};
+
     onAddPayment(paymentData);
     // Reset form
     setAmount(tenant.rentAmount);
@@ -356,6 +359,7 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
     setAdjustment(0);
     setAdjustmentReason('');
     setAdjustmentType('none');
+    setDueDate(new Date().toISOString().split('T')[0]);  // Reset dueDate
   };
 
   const handleGenerateReceipt = (payment) => {
@@ -404,7 +408,17 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white" 
             />
           </div>
-        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha de Vencimiento</label>
+          <input
+          type="date"
+          required
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+          className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2       focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+        />
+      </div>
+    </div>
 
         {/* Multas/Descuentos */}
         <div className="border-t border-gray-300 dark:border-gray-600 pt-3 mt-3">
@@ -840,7 +854,7 @@ const PropertyDetail = ({ property, tenants, payments, expenses, onBack, onAddTe
           colorClass="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800"
         />
         <StatCard
-          title="Habitaciones Vacas"
+          title="Habitaciones Vacías"
           value={vacantRooms}
           icon="🏠"
           colorClass="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800"
@@ -1313,11 +1327,6 @@ const ExpensesView = ({ expenses, properties, onBack, onAddExpense, onDeleteExpe
 const ReceiptGenerator = ({ payment, tenant, onClose }) => {
   const receiptRef = React.useRef();
   const [isSharing, setIsSharing] = React.useState(false);
-
-  // Calcular fecha de vencimiento (30 días después del pago)
-  const paymentDate = new Date(payment.date);
-  const dueDate = new Date(paymentDate);
-  dueDate.setDate(dueDate.getDate() + 30);
   
   // Función para generar canvas optimizado
   const generateCanvas = async () => {
@@ -1500,12 +1509,19 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
 
         <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 mb-6">
           <div className="text-center">
-            <p className="text-sm text-yellow-800 font-medium mb-1">PRÓXIMO PAGO VENCE</p>
+            <p className="text-sm text-yellow-800 font-medium mb-1">FECHA DE VENCIMIENTO</p>
             <p className="text-2xl font-bold text-yellow-900">
-              {dueDate.toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
+              {payment.dueDate
+                ? new Date(payment.dueDate).toLocaleDateString('es-AR', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                  })
+                : '—'}
             </p>
           </div>
         </div>
+
 
         <div className="border-t-2 border-gray-300 pt-4 text-center text-sm text-gray-600">
           <p>Este recibo certifica el pago del alquiler</p>
