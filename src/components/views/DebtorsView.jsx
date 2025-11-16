@@ -1,6 +1,7 @@
 import React from 'react';
 import StatCard from '../common/StatCard';
 import { getTenantPaymentStatus } from '../../utils/paymentUtils';
+import { AlertTriangle, DollarSign } from 'lucide-react';
 
 const DebtorsView = ({ tenants, payments, onBack }) => {
   const debtors = tenants.filter(t => {
@@ -29,13 +30,13 @@ const DebtorsView = ({ tenants, payments, onBack }) => {
         <StatCard 
           title="Total Deudores" 
           value={debtors.length} 
-          icon="⚠️" 
+          icon={<AlertTriangle className="w-6 h-6" />} 
           colorClass="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800" 
         />
         <StatCard 
           title="Deuda Total Estimada" 
           value={`$${totalDebt.toLocaleString('es-AR')}`} 
-          icon="💸" 
+          icon={<DollarSign className="w-6 h-6" />}
           colorClass="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900 dark:to-orange-800" 
         />
       </div>

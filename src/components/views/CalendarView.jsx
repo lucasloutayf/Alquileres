@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Calendar } from 'lucide-react';
 import { getTenantPaymentStatus } from '../../utils/paymentUtils';
 
 const CalendarView = ({ tenants, payments, properties, onBack }) => {
@@ -94,7 +95,10 @@ const CalendarView = ({ tenants, payments, properties, onBack }) => {
         >
           <span className="text-xl">←</span> Volver
         </button>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📅 Calendario de Vencimientos</h1>
+        <div className="flex items-center gap-2">
+          <Calendar className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Calendario de Vencimientos</h1>
+        </div>
         <div></div>
       </div>
 

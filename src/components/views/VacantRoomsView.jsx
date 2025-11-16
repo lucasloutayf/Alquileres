@@ -1,5 +1,6 @@
 import React from 'react';
 import StatCard from '../common/StatCard';
+import { Home, BarChart3 } from 'lucide-react';
 
 const VacantRoomsView = ({ properties, tenants, onBack }) => {
   const vacancyData = properties.map(prop => {
@@ -33,13 +34,13 @@ const VacantRoomsView = ({ properties, tenants, onBack }) => {
         <StatCard 
           title="Total Habitaciones Vacías" 
           value={totalVacant} 
-          icon="🏠" 
+          icon={<Home className="w-6 h-6" />}
           colorClass="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800" 
         />
         <StatCard 
           title="Ocupación General" 
           value={`${(((totalRooms - totalVacant) / totalRooms) * 100).toFixed(0)}%`} 
-          icon="📊" 
+          icon={<BarChart3 className="w-6 h-6" />}
           colorClass="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800" 
         />
       </div>

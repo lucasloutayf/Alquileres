@@ -1,4 +1,15 @@
 import React, { useState } from 'react';
+import { 
+  BarChart3, 
+  AlertTriangle, 
+  Home, 
+  DollarSign, 
+  TrendingDown, 
+  Calendar, 
+  LogOut,
+  Moon,
+  Sun
+} from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../firebase/config';
 
@@ -10,12 +21,12 @@ const Header = ({ user, theme, toggleTheme, view, setView }) => {
   };
 
   const navigationItems = [
-    { key: 'dashboard', label: '📊 Dashboard' },
-    { key: 'debtors', label: '⚠️ Deudores' },
-    { key: 'vacant', label: '🏠 Habitaciones' },
-    { key: 'income', label: '💰 Ingresos' },
-    { key: 'expenses', label: '📉 Gastos' },
-    { key: 'calendar', label: '📅 Calendario' },
+    { key: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+    { key: 'debtors', label: 'Deudores', icon: AlertTriangle },
+    { key: 'vacant', label: 'Habitaciones', icon: Home },
+    { key: 'income', label: 'Ingresos', icon: DollarSign },
+    { key: 'expenses', label: 'Gastos', icon: TrendingDown },
+    { key: 'calendar', label: 'Calendario', icon: Calendar },
   ];
 
   return (
@@ -29,15 +40,19 @@ const Header = ({ user, theme, toggleTheme, view, setView }) => {
           
           {/* Navegación desktop */}
           <nav className="hidden lg:flex gap-2 flex-1 justify-center">
-            {navigationItems.map(item => (
-              <button 
-                key={item.key}
-                onClick={() => setView(item.key)} 
-                className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors whitespace-nowrap"
-              >
-                {item.label}
-              </button>
-            ))}
+            {navigationItems.map(item => {
+              const Icon = item.icon;
+              return (
+                <button 
+                  key={item.key}
+                  onClick={() => setView(item.key)} 
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors whitespace-nowrap"
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
           </nav>
 
           {/* Botones de la derecha */}
@@ -51,20 +66,17 @@ const Header = ({ user, theme, toggleTheme, view, setView }) => {
               className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               {theme === 'light' ? 
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                </svg> :
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                </svg>
+                <Moon className="w-5 h-5" /> :
+                <Sun className="w-5 h-5" />
               }
             </button>
 
             <button 
               onClick={handleLogout} 
-              className="hidden md:block px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium"
+              className="hidden md:flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium"
             >
-              Salir
+              <LogOut className="w-4 h-4" />
+              <span>Salir</span>
             </button>
 
             {/* Botón hamburguesa */}
@@ -88,24 +100,29 @@ const Header = ({ user, theme, toggleTheme, view, setView }) => {
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <nav className="flex flex-col p-2">
-            {navigationItems.map(item => (
-              <button 
-                key={item.key}
-                onClick={() => { setView(item.key); setMobileMenuOpen(false); }} 
-                className="px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-              >
-                {item.label}
-              </button>
-            ))}
+            {navigationItems.map(item => {
+              const Icon = item.icon;
+              return (
+                <button 
+                  key={item.key}
+                  onClick={() => { setView(item.key); setMobileMenuOpen(false); }} 
+                  className="flex items-center gap-3 px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                >
+                  <Icon className="w-5 h-5" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
             <div className="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
               <div className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">
                 {user?.email}
               </div>
               <button 
                 onClick={handleLogout} 
-                className="w-full px-4 py-3 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900 rounded-lg font-medium"
+                className="w-full flex items-center gap-3 px-4 py-3 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900 rounded-lg font-medium"
               >
-                🚪 Cerrar Sesión
+                <LogOut className="w-5 h-5" />
+                <span>Cerrar Sesión</span>
               </button>
             </div>
           </nav>

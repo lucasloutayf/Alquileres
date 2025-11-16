@@ -6,6 +6,7 @@ import {
 } from 'firebase/auth';
 import { auth } from '../firebase/config';
 import toast from 'react-hot-toast';
+import { Home } from 'lucide-react';
 
 const Auth = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -107,7 +108,8 @@ const Auth = ({ onLogin }) => {
     
     try {
       await sendPasswordResetEmail(auth, email);
-      toast.success('✅ Email de recuperación enviado. Revisa tu bandeja de entrada', { duration: 5000 });
+      toast.success('Email de recuperación enviado. Revisa tu bandeja de entrada', { duration: 5000 });
+
     } catch (error) {
       console.error('Error completo:', error);
       
@@ -128,9 +130,12 @@ const Auth = ({ onLogin }) => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4">
       <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            🏠 Gestor de Alquileres
-          </h1>
+          <div className="flex items-center justify-center gap-2 mb-2">
+  <Home className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+    Gestor de Alquileres
+  </h1>
+</div>
           <p className="text-gray-600 dark:text-gray-400">
             {isLogin ? 'Inicia sesión en tu cuenta' : 'Crea tu cuenta gratis'}
           </p>

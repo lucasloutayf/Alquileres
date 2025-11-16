@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { DollarSign, Home, TrendingDown, FileText, Trash2 } from 'lucide-react';
 import StatCard from '../common/StatCard';
 import Modal from '../common/Modal';
 import ConfirmModal from '../common/ConfirmModal';
@@ -8,7 +9,6 @@ import ExpenseForm from '../forms/ExpenseForm';
 import { getTenantPaymentStatus } from '../../utils/paymentUtils';
 import { generateTenantReport } from '../../utils/pdfGenerator';
 import toast from 'react-hot-toast';
-
 
 const PropertyDetail = ({ 
   property, 
@@ -33,17 +33,17 @@ const PropertyDetail = ({
   const [itemToDelete, setItemToDelete] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
-const handleGenerateTenantReport = (tenant) => {
-  try {
-    const tenantPayments = payments.filter(p => p.tenantId === tenant.id);
-    const pdf = generateTenantReport(tenant, tenantPayments, property);
-    pdf.save(`reporte-${tenant.name.replace(/\s+/g, '-')}.pdf`);
-    toast.success('✅ Reporte descargado correctamente');
-  } catch (error) {
-    console.error('Error generando reporte:', error);
-    toast.error('❌ Error al generar reporte');
-  }
-};
+  const handleGenerateTenantReport = (tenant) => {
+    try {
+      const tenantPayments = payments.filter(p => p.tenantId === tenant.id);
+      const pdf = generateTenantReport(tenant, tenantPayments, property);
+      pdf.save(`reporte-${tenant.name.replace(/\s+/g, '-')}.pdf`);
+      toast.success('Reporte descargado correctamente');
+    } catch (error) {
+      console.error('Error generando reporte:', error);
+      toast.error('Error al generar reporte');
+    }
+  };
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -148,19 +148,19 @@ const handleGenerateTenantReport = (tenant) => {
         <StatCard
           title="Ingreso Mensual Potencial"
           value={totalMonthlyIncome.toLocaleString('es-AR')}
-          icon="💰"
+          icon={<DollarSign className="w-6 h-6" />}
           colorClass="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800"
         />
         <StatCard
           title="Habitaciones Vacías"
           value={vacantRooms}
-          icon="🏠"
+          icon={<Home className="w-6 h-6" />}
           colorClass="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800"
         />
         <StatCard
           title="Gastos Totales"
           value={totalExpensesAmount.toLocaleString('es-AR')}
-          icon="📉"
+          icon={<TrendingDown className="w-6 h-6" />}
           colorClass="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800"
         />
       </div>
@@ -274,19 +274,18 @@ const handleGenerateTenantReport = (tenant) => {
                         >
                           Editar
                         </button>
-                            <button
-      onClick={() => handleGenerateTenantReport(tenant)}
-      className="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm"
-      title="Descargar reporte"
-    >
-      📄
-    </button>
-
+                        <button
+                          onClick={() => handleGenerateTenantReport(tenant)}
+                          className="p-1 bg-purple-600 text-white rounded hover:bg-purple-700"
+                          title="Descargar reporte"
+                        >
+                          <FileText className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={() => { setItemToDelete(tenant); setConfirmModalOpen(true); }}
-                          className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                          className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
                         >
-                          🗑️
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
@@ -345,9 +344,9 @@ const handleGenerateTenantReport = (tenant) => {
                   <td className="px-4 py-4">
                     <button
                       onClick={() => { setItemToDelete(expense); setConfirmModalOpen(true); }}
-                      className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                      className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
                     >
-                      🗑️
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </td>
                 </tr>

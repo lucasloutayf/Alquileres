@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
+import { Plus, Minus, FileText, Trash2 } from 'lucide-react';
 import { getTodayFormatted, addTimeToDate } from '../../utils/dateUtils';
 import ReceiptGenerator from '../receipts/ReceiptGenerator';
 import toast from 'react-hot-toast';
-
 
 const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePayment }) => {
   const [amount, setAmount] = useState(tenant.rentAmount);
@@ -24,51 +24,47 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
   }, [amount, adjustment, adjustmentType]);
 
   const handleSubmit = (e) => {
-  e.preventDefault();
-  
-  // Validar monto base
-  if (!amount || parseInt(amount) <= 0) {
-    toast.error('❌ El monto base debe ser mayor a 0');
-    return;
-  }
-  
-  // Validar ajuste si corresponde
-  if (adjustmentType !== 'none') {
-    if (!adjustment || parseInt(adjustment) <= 0) {
-      toast.error('❌ El monto de ajuste debe ser mayor a 0');
+    e.preventDefault();
+    
+    if (!amount || parseInt(amount) <= 0) {
+      toast.error('El monto base debe ser mayor a 0');
       return;
     }
-    if (!adjustmentReason || adjustmentReason.trim() === '') {
-      toast.error('❌ Debe indicar el motivo del ajuste');
-      return;
+    
+    if (adjustmentType !== 'none') {
+      if (!adjustment || parseInt(adjustment) <= 0) {
+        toast.error('El monto de ajuste debe ser mayor a 0');
+        return;
+      }
+      if (!adjustmentReason || adjustmentReason.trim() === '') {
+        toast.error('Debe indicar el motivo del ajuste');
+        return;
+      }
     }
-  }
-  
-  const dateWithTime = addTimeToDate(date);
-  const dueDateWithTime = addTimeToDate(dueDate);
-  
-  const paymentData = {
-    tenantId: tenant.id,
-    baseAmount: parseInt(amount),
-    adjustment: adjustmentType !== 'none' ? parseInt(adjustment) : 0,
-    adjustmentType: adjustmentType !== 'none' ? adjustmentType : null,
-    adjustmentReason: adjustmentType !== 'none' ? adjustmentReason : null,
-    amount: finalAmount,
-    date: dateWithTime,
-    dueDate: dueDateWithTime,
+    
+    const dateWithTime = addTimeToDate(date);
+    const dueDateWithTime = addTimeToDate(dueDate);
+    
+    const paymentData = {
+      tenantId: tenant.id,
+      baseAmount: parseInt(amount),
+      adjustment: adjustmentType !== 'none' ? parseInt(adjustment) : 0,
+      adjustmentType: adjustmentType !== 'none' ? adjustmentType : null,
+      adjustmentReason: adjustmentType !== 'none' ? adjustmentReason : null,
+      amount: finalAmount,
+      date: dateWithTime,
+      dueDate: dueDateWithTime,
+    };
+
+    onAddPayment(paymentData);
+    
+    setAmount(tenant.rentAmount);
+    setDate(getTodayFormatted());
+    setAdjustment(0);
+    setAdjustmentReason('');
+    setAdjustmentType('none');
+    setDueDate(getTodayFormatted());
   };
-
-  onAddPayment(paymentData);
-  
-  // Reset form
-  setAmount(tenant.rentAmount);
-  setDate(getTodayFormatted());
-  setAdjustment(0);
-  setAdjustmentReason('');
-  setAdjustmentType('none');
-  setDueDate(getTodayFormatted());
-};
-
 
   const handleGenerateReceipt = (payment) => {
     setSelectedPayment(payment);
@@ -156,8 +152,8 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
               >
                 <option value="none">Sin ajuste</option>
-                <option value="surcharge">➕ Multa/Cargo</option>
-                <option value="discount">➖ Descuento</option>
+                <option value="surcharge">Multa/Cargo</option>
+                <option value="discount">Descuento</option>
               </select>
             </div>
 
@@ -196,8 +192,18 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
               </span>
             </div>
             <div className="flex justify-between items-center text-sm mb-1">
-              <span className={adjustmentType === 'surcharge' ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}>
-                {adjustmentType === 'surcharge' ? 'Multa/Cargo:' : 'Descuento:'}
+              <span className={adjustmentType === 'surcharge' ? 'text-red-600 dark:text-red-400 flex items-center gap-1' : 'text-green-600 dark:text-green-400 flex items-center gap-1'}>
+                {adjustmentType === 'surcharge' ? (
+                  <>
+                    <Plus className="w-4 h-4" />
+                    <span>Multa/Cargo:</span>
+                  </>
+                ) : (
+                  <>
+                    <Minus className="w-4 h-4" />
+                    <span>Descuento:</span>
+                  </>
+                )}
               </span>
               <span className={adjustmentType === 'surcharge' ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}>
                 {adjustmentType === 'surcharge' ? '+' : '-'}${parseInt(adjustment || 0).toLocaleString('es-AR')}
@@ -238,12 +244,22 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
                       {new Date(payment.date).toLocaleDateString('es-AR')}
                     </span>
                     {payment.adjustmentType && (
-                      <span className={`text-xs px-2 py-1 rounded ${
+                      <span className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${
                         payment.adjustmentType === 'surcharge' 
                           ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200' 
                           : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200'
                       }`}>
-                        {payment.adjustmentType === 'surcharge' ? 'Multa' : 'Descuento'}
+                        {payment.adjustmentType === 'surcharge' ? (
+                          <>
+                            <Plus className="w-3 h-3" />
+                            <span>Multa</span>
+                          </>
+                        ) : (
+                          <>
+                            <Minus className="w-3 h-3" />
+                            <span>Descuento</span>
+                          </>
+                        )}
                       </span>
                     )}
                   </div>
@@ -266,15 +282,16 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
                 <div className="flex gap-2">
                   <button 
                     onClick={() => handleGenerateReceipt(payment)}
-                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                    className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
                   >
-                    📄 Recibo
+                    <FileText className="w-4 h-4" />
+                    <span>Recibo</span>
                   </button>
                   <button 
                     onClick={() => setConfirmDelete(payment.id)}
-                    className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                    className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
                   >
-                    🗑️
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>

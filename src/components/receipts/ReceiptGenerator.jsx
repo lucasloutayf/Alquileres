@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { Download, Copy, Share2, Printer, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const ReceiptGenerator = ({ payment, tenant, onClose }) => {
@@ -34,7 +35,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
       link.click();
     } catch (error) {
       console.error('Error al descargar:', error);
-      toast('❌ Error al generar la imagen');
+      toast.error('Error al generar la imagen');
     }
   };
 
@@ -51,20 +52,20 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
           await navigator.clipboard.write([
             new ClipboardItem({ 'image/png': blob })
           ]);
-          toast('✅ ¡Imagen copiada!\n\nPegá en WhatsApp Web con Ctrl+V');
+          toast.success('¡Imagen copiada! Pegá en WhatsApp Web con Ctrl+V');
         } catch (err) {
-          toast('❌ No se pudo copiar. Usá "Descargar" en su lugar.');
+          toast.error('No se pudo copiar. Usá "Descargar" en su lugar.');
         }
       }, 'image/png', 1.0);
       
     } catch (error) {
-      toast('❌ Error al copiar la imagen');
+      toast.error('Error al copiar la imagen');
     }
   };
 
   const handleShareWhatsApp = async () => {
     if (!navigator.share) {
-      toast('⚠️ Tu navegador no soporta compartir. Usá "Descargar" o "Copiar".');
+      toast.error('Tu navegador no soporta compartir. Usá "Descargar" o "Copiar".');
       return;
     }
 
@@ -92,7 +93,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
             text: `Recibo - ${tenant.name} - $${payment.amount.toLocaleString('es-AR')}`
           });
 
-          console.log('✅ Compartido exitosamente');
+          console.log('Compartido exitosamente');
 
         } catch (shareError) {
           if (shareError.name === 'AbortError') {
@@ -104,7 +105,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
             link.href = URL.createObjectURL(blob);
             link.click();
             URL.revokeObjectURL(link.href);
-            toast('❌ No se pudo compartir. La imagen se descargó.');
+            toast.error('No se pudo compartir. La imagen se descargó.');
           }
         } finally {
           setIsSharing(false);
@@ -113,7 +114,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
 
     } catch (error) {
       console.error('Error general:', error);
-      toast('❌ Error al generar el recibo.');
+      toast.error('Error al generar el recibo.');
       setIsSharing(false);
     }
   };
@@ -207,7 +208,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
           onClick={handleDownloadImage}
           className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm flex items-center justify-center gap-2"
         >
-          <span>📥</span>
+          <Download className="w-5 h-5" />
           <span className="hidden sm:inline">Descargar</span>
         </button>
         
@@ -215,7 +216,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
           onClick={handleCopyImage}
           className="px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold text-sm flex items-center justify-center gap-2"
         >
-          <span>📋</span>
+          <Copy className="w-5 h-5" />
           <span className="hidden sm:inline">Copiar</span>
         </button>
         
@@ -224,7 +225,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
           disabled={isSharing}
           className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span>{isSharing ? '⏳' : '💬'}</span>
+          {isSharing ? <Clock className="w-5 h-5 animate-spin" /> : <Share2 className="w-5 h-5" />}
           <span className="hidden sm:inline">{isSharing ? 'Generando...' : 'Compartir'}</span>
         </button>
         
@@ -232,7 +233,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
           onClick={handlePrint}
           className="px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold text-sm flex items-center justify-center gap-2"
         >
-          <span>🖨️</span>
+          <Printer className="w-5 h-5" />
           <span className="hidden sm:inline">Imprimir</span>
         </button>
       </div>

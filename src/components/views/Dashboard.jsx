@@ -1,4 +1,14 @@
 import React, { useMemo, useState } from 'react';
+import { 
+  DollarSign, 
+  TrendingDown, 
+  Users, 
+  AlertTriangle, 
+  FileText, 
+  Plus, 
+  Edit, 
+  Trash2 
+} from 'lucide-react';
 import StatCard from '../common/StatCard';
 import BarChart from '../common/BarChart';
 import PropertyForm from '../forms/PropertyForm';
@@ -84,10 +94,10 @@ const Dashboard = ({ properties, tenants, payments, expenses, onSelectProperty, 
       const pdf = generateMonthlyReport(reportData);
       pdf.save(`reporte-mensual-${currentMonth}-${currentYear}.pdf`);
       
-      toast.success('✅ Reporte descargado correctamente');
+      toast.success('Reporte descargado correctamente');
     } catch (error) {
       console.error('Error generando reporte:', error);
-      toast.error('❌ Error al generar reporte');
+      toast.error('Error al generar reporte');
     }
   };
 
@@ -116,7 +126,7 @@ const Dashboard = ({ properties, tenants, payments, expenses, onSelectProperty, 
   };
 
   const openEditModal = (property, e) => {
-    e.stopPropagation(); // Evitar que se abra el detalle de la propiedad
+    e.stopPropagation();
     setPropertyToEdit(property);
     setIsPropertyFormOpen(true);
   };
@@ -132,25 +142,25 @@ const Dashboard = ({ properties, tenants, payments, expenses, onSelectProperty, 
         <StatCard 
           title="Ingresos generados este mes" 
           value={`$${totalIncome.toLocaleString('es-AR')}`} 
-          icon="💰" 
+          icon={<DollarSign className="w-6 h-6" />}
           colorClass="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800" 
         />
         <StatCard 
           title="Gastos Mensuales" 
           value={`$${totalExpenses.toLocaleString('es-AR')}`} 
-          icon="📉" 
+          icon={<TrendingDown className="w-6 h-6" />}
           colorClass="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800" 
         />
         <StatCard 
           title="Inquilinos Activos" 
           value={activeTenants} 
-          icon="👥" 
+          icon={<Users className="w-6 h-6" />}
           colorClass="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800" 
         />
         <StatCard 
           title="Deudores" 
           value={debtors} 
-          icon="⚠️" 
+          icon={<AlertTriangle className="w-6 h-6" />}
           colorClass="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800" 
         />
       </div>
@@ -165,14 +175,14 @@ const Dashboard = ({ properties, tenants, payments, expenses, onSelectProperty, 
               onClick={() => setIsPropertyFormOpen(true)}
               className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
             >
-              <span>➕</span>
+              <Plus className="w-5 h-5" />
               <span>Agregar Propiedad</span>
             </button>
             <button
               onClick={handleGenerateMonthlyReport}
               className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
             >
-              <span>📄</span>
+              <FileText className="w-5 h-5" />
               <span className="hidden sm:inline">Reporte Mensual</span>
               <span className="sm:hidden">Reporte</span>
             </button>
@@ -189,7 +199,7 @@ const Dashboard = ({ properties, tenants, payments, expenses, onSelectProperty, 
                 onClick={() => setIsPropertyFormOpen(true)}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
               >
-                <span>➕</span>
+                <Plus className="w-5 h-5" />
                 <span>Agregar Primera Propiedad</span>
               </button>
             </div>
@@ -212,14 +222,14 @@ const Dashboard = ({ properties, tenants, payments, expenses, onSelectProperty, 
                       className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                       title="Editar propiedad"
                     >
-                      ✏️
+                      <Edit className="w-4 h-4" />
                     </button>
                     <button
                       onClick={(e) => openDeleteModal(prop, e)}
                       className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                       title="Eliminar propiedad"
                     >
-                      🗑️
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
 

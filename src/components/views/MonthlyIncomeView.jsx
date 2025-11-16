@@ -1,60 +1,58 @@
 import React, { useMemo } from 'react';
 import StatCard from '../common/StatCard';
 import BarChart from '../common/BarChart';
+import { DollarSign, TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
 import { generateAnnualReport } from '../../utils/pdfGenerator';
 import toast from 'react-hot-toast';
 
-
 const MonthlyIncomeView = ({ payments, tenants, expenses, properties, onBack }) => {
-    const handleGenerateAnnualReport = () => {
-  try {
-    const currentYear = new Date().getFullYear();
-    
-    const monthlyData = [];
-    for (let month = 0; month < 12; month++) {
-      const monthName = new Date(currentYear, month, 1).toLocaleDateString('es-AR', { month: 'long' });
+  const handleGenerateAnnualReport = () => {
+    try {
+      const currentYear = new Date().getFullYear();
       
-      const monthIncome = payments.filter(p => {
-        const date = new Date(p.date);
-        return date.getFullYear() === currentYear && date.getMonth() === month;
-      }).reduce((sum, p) => sum + p.amount, 0);
+      const monthlyData = [];
+      for (let month = 0; month < 12; month++) {
+        const monthName = new Date(currentYear, month, 1).toLocaleDateString('es-AR', { month: 'long' });
+        
+        const monthIncome = payments.filter(p => {
+          const date = new Date(p.date);
+          return date.getFullYear() === currentYear && date.getMonth() === month;
+        }).reduce((sum, p) => sum + p.amount, 0);
+        
+        const monthExpenses = (expenses || []).filter(e => {
+          const date = new Date(e.date);
+          return date.getFullYear() === currentYear && date.getMonth() === month;
+        }).reduce((sum, e) => sum + (e.amount || 0), 0);
+        
+        monthlyData.push({
+          name: monthName.charAt(0).toUpperCase() + monthName.slice(1),
+          income: monthIncome,
+          expenses: monthExpenses,
+          balance: monthIncome - monthExpenses
+        });
+      }
       
-      const monthExpenses = (expenses || []).filter(e => {
-  const date = new Date(e.date);
-  return date.getFullYear() === currentYear && date.getMonth() === month;
-}).reduce((sum, e) => sum + (e.amount || 0), 0);
-
+      const totalIncome = monthlyData.reduce((sum, m) => sum + m.income, 0);
+      const totalExpenses = monthlyData.reduce((sum, m) => sum + m.expenses, 0);
       
-      monthlyData.push({
-        name: monthName.charAt(0).toUpperCase() + monthName.slice(1),
-        income: monthIncome,
-        expenses: monthExpenses,
-        balance: monthIncome - monthExpenses
-      });
+      const reportData = {
+        year: currentYear,
+        monthlyData,
+        properties: properties || [],
+        tenants: tenants || [],
+        totalIncome,
+        totalExpenses
+      };
+      
+      const pdf = generateAnnualReport(reportData);
+      pdf.save(`reporte-anual-${currentYear}.pdf`);
+      
+      toast.success('Reporte anual descargado');
+    } catch (error) {
+      console.error('Error generando reporte:', error);
+      toast.error('Error al generar reporte');
     }
-    
-    const totalIncome = monthlyData.reduce((sum, m) => sum + m.income, 0);
-    const totalExpenses = monthlyData.reduce((sum, m) => sum + m.expenses, 0);
-    
-    const reportData = {
-  year: currentYear,
-  monthlyData,
-  properties: properties || [],
-  tenants: tenants || [],
-  totalIncome,
-  totalExpenses
-};
-
-    
-    const pdf = generateAnnualReport(reportData);
-    pdf.save(`reporte-anual-${currentYear}.pdf`);
-    
-    toast.success('✅ Reporte anual descargado');
-  } catch (error) {
-    console.error('Error generando reporte:', error);
-    toast.error('❌ Error al generar reporte');
-  }
-};
+  };
 
   const monthlyData = useMemo(() => {
     const grouped = {};
@@ -79,34 +77,33 @@ const MonthlyIncomeView = ({ payments, tenants, expenses, properties, onBack }) 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
-  <button 
-    onClick={onBack} 
-    className="flex items-center gap-2 px-4 py-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900 rounded-lg transition-colors"
-  >
-    <span className="text-xl">←</span> Volver
-  </button>
-  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Ingresos Mensuales</h1>
-  <button
-    onClick={handleGenerateAnnualReport}
-    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-  >
-    <span>📊</span>
-    <span>Reporte Anual</span>
-  </button>
-</div>
-
+        <button 
+          onClick={onBack} 
+          className="flex items-center gap-2 px-4 py-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900 rounded-lg transition-colors"
+        >
+          <span className="text-xl">←</span> Volver
+        </button>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Ingresos Mensuales</h1>
+        <button
+          onClick={handleGenerateAnnualReport}
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+        >
+          <BarChart3 className="w-5 h-5" />
+          <span>Reporte Anual</span>
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <StatCard 
           title="Ingreso Este Mes" 
           value={`$${thisMonthIncome.toLocaleString('es-AR')}`} 
-          icon="💰" 
+          icon={<DollarSign className="w-6 h-6" />}
           colorClass="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800" 
         />
         <StatCard 
           title="Variación vs Mes Anterior" 
           value={`${change > 0 ? '+' : ''}${change}%`} 
-          icon={change >= 0 ? '📈' : '📉'} 
+          icon={change >= 0 ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
           colorClass={change >= 0 
             ? "bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800" 
             : "bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800"

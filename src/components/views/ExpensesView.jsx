@@ -3,6 +3,7 @@ import StatCard from '../common/StatCard';
 import BarChart from '../common/BarChart';
 import Modal from '../common/Modal';
 import ExpenseForm from '../forms/ExpenseForm';
+import { Plus, DollarSign, Trash2 } from 'lucide-react';
 
 const ExpensesView = ({ expenses, properties, onBack, onAddExpense, onDeleteExpense }) => {
   const [expenseModalOpen, setExpenseModalOpen] = useState(false);
@@ -44,16 +45,17 @@ const ExpensesView = ({ expenses, properties, onBack, onAddExpense, onDeleteExpe
         
         <button 
           onClick={() => setExpenseModalOpen(true)} 
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
         >
-          ➕ Agregar Gasto
+          <Plus className="w-5 h-5" />
+          <span>Agregar Gasto</span>
         </button>
       </div>
 
       <StatCard 
         title="Gastos Totales" 
         value={`$${totalExpenses.toLocaleString('es-AR')}`} 
-        icon="💸" 
+        icon={<DollarSign className="w-6 h-6" />}
         colorClass="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800" 
       />
       
@@ -105,9 +107,10 @@ const ExpensesView = ({ expenses, properties, onBack, onAddExpense, onDeleteExpe
                     <td className="px-4 py-4">
                       <button
                         onClick={() => onDeleteExpense(expense.id)}
-                        className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                        className="flex items-center gap-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
                       >
-                        🗑️ Eliminar
+                        <Trash2 className="w-4 h-4" />
+                        <span>Eliminar</span>
                       </button>
                     </td>
                   </tr>
