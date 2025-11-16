@@ -5,6 +5,9 @@ import {
   getTenants, 
   getPayments, 
   getExpenses,
+  addProperty as addPropertyFirestore,
+  updateProperty as updatePropertyFirestore,
+  deleteProperty as deletePropertyFirestore,
   addTenant as addTenantFirestore,
   updateTenant as updateTenantFirestore,
   deleteTenant as deleteTenantFirestore,
@@ -14,7 +17,7 @@ import {
   deleteExpense as deleteExpenseFirestore
 } from '../firebase/firestore';
 
-export const useFirestore = () => {
+export const useFirestore = (userId) => {
   const [properties, setProperties] = useState([]);
   const [tenants, setTenants] = useState([]);
   const [payments, setPayments] = useState([]);
@@ -22,20 +25,26 @@ export const useFirestore = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Suscripciones en tiempo real usando tus funciones
-    const unsubscribeProperties = getProperties((data) => {
+    // Solo suscribirse si hay un userId
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
+    // Suscripciones en tiempo real filtrando por userId
+    const unsubscribeProperties = getProperties(userId, (data) => {
       setProperties(data);
     });
 
-    const unsubscribeTenants = getTenants((data) => {
+    const unsubscribeTenants = getTenants(userId, (data) => {
       setTenants(data);
     });
 
-    const unsubscribePayments = getPayments((data) => {
+    const unsubscribePayments = getPayments(userId, (data) => {
       setPayments(data);
     });
 
-    const unsubscribeExpenses = getExpenses((data) => {
+    const unsubscribeExpenses = getExpenses(userId, (data) => {
       setExpenses(data);
     });
     
@@ -48,28 +57,86 @@ export const useFirestore = () => {
       unsubscribePayments();
       unsubscribeExpenses();
     };
-  }, []);
+  }, [userId]);
 
-  // Wrapper para addTenant
-  const addTenant = async (tenantData) => {
+  // ===== PROPIEDADES =====
+  const addProperty = async (propertyData) => {
+    if (!userId) {
+      toast.error('Error: Usuario no autenticado');
+      return;
+    }
     try {
-      await addTenantFirestore(tenantData);
+      await addPropertyFirestore(propertyData, userId);
+      toast.success('Propiedad agregada correctamente');
     } catch (error) {
-      toast('Error al agregar inquilino: ' + error.message);
+      toast.error('Error al agregar propiedad: ' + error.message);
     }
   };
 
-  // Wrapper para editTenant
+  const editProperty = async (propertyData) => {
+    try {
+      const { id, ...data } = propertyData;
+      await updatePropertyFirestore(id, data);
+      toast.success('Propiedad actualizada correctamente');
+    } catch (error) {
+      toast.error('Error al editar propiedad: ' + error.message);
+    }
+  };
+
+  const deleteProperty = async (propertyId) => {
+    try {
+      // Verificar si hay inquilinos activos
+      const propertyTenants = tenants.filter(t => t.propertyId === propertyId && t.contractStatus === 'activo');
+      
+      if (propertyTenants.length > 0) {
+        toast.error('No se puede eliminar una propiedad con inquilinos activos');
+        return;
+      }
+
+      // Eliminar inquilinos inactivos de la propiedad
+      const inactiveTenants = tenants.filter(t => t.propertyId === propertyId);
+      for (const tenant of inactiveTenants) {
+        await deleteTenantFirestore(tenant.id);
+      }
+
+      // Eliminar gastos asociados a la propiedad
+      const propertyExpenses = expenses.filter(e => e.propertyId === propertyId);
+      for (const expense of propertyExpenses) {
+        await deleteExpenseFirestore(expense.id);
+      }
+
+      // Finalmente eliminar la propiedad
+      await deletePropertyFirestore(propertyId);
+      toast.success('Propiedad eliminada correctamente');
+    } catch (error) {
+      toast.error('Error al eliminar propiedad: ' + error.message);
+    }
+  };
+
+  // ===== INQUILINOS =====
+  const addTenant = async (tenantData) => {
+    if (!userId) {
+      toast.error('Error: Usuario no autenticado');
+      return;
+    }
+    try {
+      await addTenantFirestore(tenantData, userId);
+      toast.success('Inquilino agregado correctamente');
+    } catch (error) {
+      toast.error('Error al agregar inquilino: ' + error.message);
+    }
+  };
+
   const editTenant = async (updatedTenant) => {
     try {
       const { id, ...data } = updatedTenant;
       await updateTenantFirestore(id, data);
+      toast.success('Inquilino actualizado correctamente');
     } catch (error) {
-      toast('Error al editar inquilino: ' + error.message);
+      toast.error('Error al editar inquilino: ' + error.message);
     }
   };
 
-  // Wrapper para deleteTenant (incluyendo lógica de borrar pagos)
   const deleteTenant = async (tenantId) => {
     try {
       // Primero borrar todos los pagos del inquilino
@@ -79,44 +146,55 @@ export const useFirestore = () => {
       }
       // Luego borrar el inquilino
       await deleteTenantFirestore(tenantId);
+      toast.success('Inquilino eliminado correctamente');
     } catch (error) {
-      toast('Error al eliminar inquilino: ' + error.message);
+      toast.error('Error al eliminar inquilino: ' + error.message);
     }
   };
 
-  // Wrapper para addPayment
+  // ===== PAGOS =====
   const addPayment = async (paymentData) => {
+    if (!userId) {
+      toast.error('Error: Usuario no autenticado');
+      return;
+    }
     try {
-      await addPaymentFirestore(paymentData);
+      await addPaymentFirestore(paymentData, userId);
+      toast.success('Pago registrado correctamente');
     } catch (error) {
-      toast('Error al agregar pago: ' + error.message);
+      toast.error('Error al agregar pago: ' + error.message);
     }
   };
 
-  // Wrapper para deletePayment (necesitas agregarlo a firestore.js)
   const deletePayment = async (paymentId) => {
     try {
       await deletePaymentFirestore(paymentId);
+      toast.success('Pago eliminado correctamente');
     } catch (error) {
-      toast('Error al eliminar pago: ' + error.message);
+      toast.error('Error al eliminar pago: ' + error.message);
     }
   };
 
-  // Wrapper para addExpense
+  // ===== GASTOS =====
   const addExpense = async (expenseData) => {
+    if (!userId) {
+      toast.error('Error: Usuario no autenticado');
+      return;
+    }
     try {
-      await addExpenseFirestore(expenseData);
+      await addExpenseFirestore(expenseData, userId);
+      toast.success('Gasto agregado correctamente');
     } catch (error) {
-      toast('Error al agregar gasto: ' + error.message);
+      toast.error('Error al agregar gasto: ' + error.message);
     }
   };
 
-  // Wrapper para deleteExpense
   const deleteExpense = async (expenseId) => {
     try {
       await deleteExpenseFirestore(expenseId);
+      toast.success('Gasto eliminado correctamente');
     } catch (error) {
-      toast('Error al eliminar gasto: ' + error.message);
+      toast.error('Error al eliminar gasto: ' + error.message);
     }
   };
 
@@ -126,6 +204,9 @@ export const useFirestore = () => {
     payments,
     expenses,
     loading,
+    addProperty,      // ← NUEVO
+    editProperty,     // ← NUEVO
+    deleteProperty,   // ← NUEVO
     addTenant,
     editTenant,
     deleteTenant,

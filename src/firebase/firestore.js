@@ -6,13 +6,17 @@ import {
   doc, 
   getDocs,
   onSnapshot,
-  query
+  query,
+  where  // ← AGREGAR este import
 } from 'firebase/firestore';
 import { db } from './config';
 
 // ===== PROPIEDADES =====
-export const getProperties = (callback) => {
-  const q = query(collection(db, 'properties'));
+export const getProperties = (userId, callback) => {
+  const q = query(
+    collection(db, 'properties'),
+    where('userId', '==', userId)  // ← Filtrar por usuario
+  );
   return onSnapshot(q, (snapshot) => {
     const properties = snapshot.docs.map(doc => ({
       id: doc.id,
@@ -22,9 +26,45 @@ export const getProperties = (callback) => {
   });
 };
 
+export const addProperty = async (propertyData, userId) => {
+  try {
+    const docRef = await addDoc(collection(db, 'properties'), {
+      ...propertyData,
+      userId,  // ← Agregar userId
+      createdAt: new Date().toISOString()
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error("Error adding property: ", error);
+    throw error;
+  }
+};
+
+export const updateProperty = async (propertyId, propertyData) => {
+  try {
+    const propertyRef = doc(db, 'properties', propertyId);
+    await updateDoc(propertyRef, propertyData);
+  } catch (error) {
+    console.error("Error updating property: ", error);
+    throw error;
+  }
+};
+
+export const deleteProperty = async (propertyId) => {
+  try {
+    await deleteDoc(doc(db, 'properties', propertyId));
+  } catch (error) {
+    console.error("Error deleting property: ", error);
+    throw error;
+  }
+};
+
 // ===== INQUILINOS =====
-export const getTenants = (callback) => {
-  const q = query(collection(db, 'tenants'));
+export const getTenants = (userId, callback) => {
+  const q = query(
+    collection(db, 'tenants'),
+    where('userId', '==', userId)  // ← Filtrar por usuario
+  );
   return onSnapshot(q, (snapshot) => {
     const tenants = snapshot.docs.map(doc => ({
       id: doc.id,
@@ -34,9 +74,13 @@ export const getTenants = (callback) => {
   });
 };
 
-export const addTenant = async (tenantData) => {
+export const addTenant = async (tenantData, userId) => {
   try {
-    const docRef = await addDoc(collection(db, 'tenants'), tenantData);
+    const docRef = await addDoc(collection(db, 'tenants'), {
+      ...tenantData,
+      userId,  // ← Agregar userId
+      createdAt: new Date().toISOString()
+    });
     return docRef.id;
   } catch (error) {
     console.error("Error adding tenant: ", error);
@@ -64,8 +108,11 @@ export const deleteTenant = async (tenantId) => {
 };
 
 // ===== PAGOS =====
-export const getPayments = (callback) => {
-  const q = query(collection(db, 'payments'));
+export const getPayments = (userId, callback) => {
+  const q = query(
+    collection(db, 'payments'),
+    where('userId', '==', userId)  // ← Filtrar por usuario
+  );
   return onSnapshot(q, (snapshot) => {
     const payments = snapshot.docs.map(doc => ({
       id: doc.id,
@@ -75,9 +122,13 @@ export const getPayments = (callback) => {
   });
 };
 
-export const addPayment = async (paymentData) => {
+export const addPayment = async (paymentData, userId) => {
   try {
-    const docRef = await addDoc(collection(db, 'payments'), paymentData);
+    const docRef = await addDoc(collection(db, 'payments'), {
+      ...paymentData,
+      userId,  // ← Agregar userId
+      createdAt: new Date().toISOString()
+    });
     return docRef.id;
   } catch (error) {
     console.error("Error adding payment: ", error);
@@ -85,7 +136,6 @@ export const addPayment = async (paymentData) => {
   }
 };
 
-// ← AGREGÁ ESTA FUNCIÓN ACÁ
 export const deletePayment = async (paymentId) => {
   try {
     await deleteDoc(doc(db, 'payments', paymentId));
@@ -96,8 +146,11 @@ export const deletePayment = async (paymentId) => {
 };
 
 // ===== GASTOS =====
-export const getExpenses = (callback) => {
-  const q = query(collection(db, 'expenses'));
+export const getExpenses = (userId, callback) => {
+  const q = query(
+    collection(db, 'expenses'),
+    where('userId', '==', userId)  // ← Filtrar por usuario
+  );
   return onSnapshot(q, (snapshot) => {
     const expenses = snapshot.docs.map(doc => ({
       id: doc.id,
@@ -107,9 +160,13 @@ export const getExpenses = (callback) => {
   });
 };
 
-export const addExpense = async (expenseData) => {
+export const addExpense = async (expenseData, userId) => {
   try {
-    const docRef = await addDoc(collection(db, 'expenses'), expenseData);
+    const docRef = await addDoc(collection(db, 'expenses'), {
+      ...expenseData,
+      userId,  // ← Agregar userId
+      createdAt: new Date().toISOString()
+    });
     return docRef.id;
   } catch (error) {
     console.error("Error adding expense: ", error);
