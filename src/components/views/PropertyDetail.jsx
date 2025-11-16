@@ -6,6 +6,9 @@ import TenantForm from '../forms/TenantForm';
 import PaymentsModal from '../forms/PaymentsModal';
 import ExpenseForm from '../forms/ExpenseForm';
 import { getTenantPaymentStatus } from '../../utils/paymentUtils';
+import { generateTenantReport } from '../../utils/pdfGenerator';
+import toast from 'react-hot-toast';
+
 
 const PropertyDetail = ({ 
   property, 
@@ -29,6 +32,18 @@ const PropertyDetail = ({
   const [selectedTenant, setSelectedTenant] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
+const handleGenerateTenantReport = (tenant) => {
+  try {
+    const tenantPayments = payments.filter(p => p.tenantId === tenant.id);
+    const pdf = generateTenantReport(tenant, tenantPayments, property);
+    pdf.save(`reporte-${tenant.name.replace(/\s+/g, '-')}.pdf`);
+    toast.success('✅ Reporte descargado correctamente');
+  } catch (error) {
+    console.error('Error generando reporte:', error);
+    toast.error('❌ Error al generar reporte');
+  }
+};
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -259,6 +274,14 @@ const PropertyDetail = ({
                         >
                           Editar
                         </button>
+                            <button
+      onClick={() => handleGenerateTenantReport(tenant)}
+      className="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm"
+      title="Descargar reporte"
+    >
+      📄
+    </button>
+
                         <button
                           onClick={() => { setItemToDelete(tenant); setConfirmModalOpen(true); }}
                           className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"

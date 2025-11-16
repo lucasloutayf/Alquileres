@@ -1,0 +1,372 @@
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+
+// Generar reporte mensual
+export const generateMonthlyReport = (data) => {
+  const { month, year, income, expenses, properties, tenants, payments, debtors } = data;
+  
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  
+  // Header
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Reporte Mensual de Alquileres', pageWidth / 2, 20, { align: 'center' });
+  
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Período: ${month}/${year}`, pageWidth / 2, 30, { align: 'center' });
+  doc.text(`Generado: ${new Date().toLocaleDateString('es-AR')}`, pageWidth / 2, 37, { align: 'center' });
+  
+  // Línea separadora
+  doc.setLineWidth(0.5);
+  doc.line(15, 42, pageWidth - 15, 42);
+  
+  let yPosition = 50;
+  
+  // Resumen financiero
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Resumen Financiero', 15, yPosition);
+  yPosition += 10;
+  
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  
+  const totalIncome = income.reduce((sum, p) => sum + (p.amount || 0), 0);
+  const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+  const balance = totalIncome - totalExpenses;
+  
+  doc.text(`Ingresos del mes: $${totalIncome.toLocaleString('es-AR')}`, 20, yPosition);
+  yPosition += 7;
+  doc.text(`Gastos del mes: $${totalExpenses.toLocaleString('es-AR')}`, 20, yPosition);
+  yPosition += 7;
+  
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(balance >= 0 ? 0 : 255, balance >= 0 ? 128 : 0, 0);
+  doc.text(`Balance: $${balance.toLocaleString('es-AR')}`, 20, yPosition);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont('helvetica', 'normal');
+  yPosition += 12;
+  
+  // Estadísticas generales
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Estadísticas', 15, yPosition);
+  yPosition += 10;
+  
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Total propiedades: ${properties.length}`, 20, yPosition);
+  yPosition += 7;
+  doc.text(`Total inquilinos activos: ${tenants.filter(t => t.contractStatus === 'activo').length}`, 20, yPosition);
+  yPosition += 7;
+  doc.text(`Deudores: ${debtors.length}`, 20, yPosition);
+  yPosition += 12;
+  
+  // Tabla de ingresos
+  if (income.length > 0) {
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Detalle de Ingresos', 15, yPosition);
+    yPosition += 5;
+    
+    const incomeRows = income.map(payment => {
+  const tenant = tenants.find(t => t.id === payment.tenantId);
+  return [
+    new Date(payment.date).toLocaleDateString('es-AR'),
+    tenant ? tenant.name : 'N/A',
+    `$${(payment.amount || 0).toLocaleString('es-AR')}`
+  ];
+});
+
+    
+    autoTable(doc, {
+  startY: yPosition,
+  head: [['Fecha', 'Inquilino', 'Monto']],
+  body: incomeRows,
+  theme: 'grid',
+  headStyles: { fillColor: [79, 70, 229], fontStyle: 'bold' },
+  styles: { fontSize: 10 },
+  margin: { left: 15, right: 15 }
+});
+
+    
+    yPosition = doc.lastAutoTable.finalY + 10;
+  }
+  
+  // Tabla de gastos
+  if (expenses.length > 0) {
+    if (yPosition > 230) {
+      doc.addPage();
+      yPosition = 20;
+    }
+    
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Detalle de Gastos', 15, yPosition);
+    yPosition += 5;
+    
+    const expenseRows = expenses.map(expense => {
+  const property = properties.find(p => p.id === expense.propertyId);
+  return [
+    new Date(expense.date).toLocaleDateString('es-AR'),
+    property ? property.address : 'N/A',
+    expense.category || '-',
+    expense.description || '-',
+    `$${(expense.amount || 0).toLocaleString('es-AR')}`
+  ];
+});
+
+    
+    autoTable(doc, {
+  startY: yPosition,
+  head: [['Fecha', 'Propiedad', 'Categoría', 'Descripción', 'Monto']],
+  body: expenseRows,
+  theme: 'grid',
+  headStyles: { fillColor: [220, 38, 38], fontStyle: 'bold' },
+  styles: { fontSize: 9 },
+  margin: { left: 15, right: 15 }
+});
+
+    
+    yPosition = doc.lastAutoTable.finalY + 10;
+  }
+  
+  // Deudores
+  if (debtors.length > 0) {
+    if (yPosition > 230) {
+      doc.addPage();
+      yPosition = 20;
+    }
+    
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Inquilinos con Deuda', 15, yPosition);
+    yPosition += 5;
+    
+    const debtorRows = debtors.map(debtor => [
+      debtor.name,
+      debtor.phone,
+      `${debtor.paymentStatus.months} mes(es)`,
+      `$${(debtor.rentAmount * debtor.paymentStatus.months).toLocaleString('es-AR')}`
+    ]);
+    
+    autoTable(doc, {
+  startY: yPosition,
+  head: [['Nombre', 'Teléfono', 'Meses Adeudados', 'Deuda Estimada']],
+  body: debtorRows,
+  theme: 'grid',
+  headStyles: { fillColor: [245, 158, 11], fontStyle: 'bold' },
+  styles: { fontSize: 10 },
+  margin: { left: 15, right: 15 }
+});
+
+  }
+  
+  // Footer
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(128, 128, 128);
+    doc.text(
+      `Página ${i} de ${pageCount}`,
+      pageWidth / 2,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: 'center' }
+    );
+  }
+  
+  return doc;
+};
+
+// Generar reporte de inquilino
+export const generateTenantReport = (tenant, payments, property) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Reporte de Inquilino', pageWidth / 2, 20, { align: 'center' });
+  
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Generado: ${new Date().toLocaleDateString('es-AR')}`, pageWidth / 2, 30, { align: 'center' });
+  
+  doc.setLineWidth(0.5);
+  doc.line(15, 35, pageWidth - 15, 35);
+  
+  let yPosition = 45;
+  
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Información Personal', 15, yPosition);
+  yPosition += 10;
+  
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Nombre: ${tenant.name}`, 20, yPosition);
+  yPosition += 7;
+  doc.text(`DNI: ${tenant.dni}`, 20, yPosition);
+  yPosition += 7;
+  doc.text(`Teléfono: ${tenant.phone}`, 20, yPosition);
+  yPosition += 7;
+  doc.text(`Habitación: ${tenant.roomNumber}`, 20, yPosition);
+  yPosition += 7;
+  doc.text(`Propiedad: ${property ? property.address : 'N/A'}`, 20, yPosition);
+  yPosition += 7;
+  doc.text(`Fecha de entrada: ${new Date(tenant.entryDate).toLocaleDateString('es-AR')}`, 20, yPosition);
+  yPosition += 7;
+  doc.text(`Monto mensual: $${tenant.rentAmount.toLocaleString('es-AR')}`, 20, yPosition);
+  yPosition += 7;
+  doc.text(`Estado: ${tenant.contractStatus === 'activo' ? 'Activo' : 'Finalizado'}`, 20, yPosition);
+  yPosition += 12;
+  
+  const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+  
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Resumen de Pagos', 15, yPosition);
+  yPosition += 10;
+  
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Total pagos: ${payments.length}`, 20, yPosition);
+  yPosition += 7;
+  doc.text(`Total pagado: $${totalPaid.toLocaleString('es-AR')}`, 20, yPosition);
+  yPosition += 12;
+  
+  if (payments.length > 0) {
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Historial de Pagos', 15, yPosition);
+    yPosition += 5;
+    
+    const paymentRows = payments
+  .sort((a, b) => new Date(b.date) - new Date(a.date))
+  .map(payment => {
+    let adjustmentText = '-';
+    
+    if (payment.adjustmentType && payment.adjustmentType !== 'none') {
+      const base = payment.baseAmount || 0;
+      const adj = payment.adjustment || 0;
+      const sign = payment.adjustmentType === 'surcharge' ? '+' : '-';
+      adjustmentText = `Base: $${base.toLocaleString('es-AR')} ${sign}$${adj.toLocaleString('es-AR')}`;
+    }
+    
+    return [
+      new Date(payment.date).toLocaleDateString('es-AR'),
+      adjustmentText,
+      `$${(payment.amount || 0).toLocaleString('es-AR')}`,
+      payment.adjustmentReason || '-'
+    ];
+  });
+
+    
+    autoTable(doc, {
+  startY: yPosition,
+  head: [['Fecha', 'Ajustes', 'Total', 'Motivo']],
+  body: paymentRows,
+  theme: 'grid',
+  headStyles: { fillColor: [79, 70, 229], fontStyle: 'bold' },
+  styles: { fontSize: 9 },
+  margin: { left: 15, right: 15 }
+});
+
+  }
+  
+  const pageCount = doc.internal.getNumberOfPages();
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(128, 128, 128);
+  doc.text(
+    `Página 1 de ${pageCount}`,
+    pageWidth / 2,
+    doc.internal.pageSize.getHeight() - 10,
+    { align: 'center' }
+  );
+  
+  return doc;
+};
+
+// Generar reporte anual
+export const generateAnnualReport = (data) => {
+  const { year, monthlyData, properties, tenants, totalIncome, totalExpenses } = data;
+  
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Reporte Anual ${year}`, pageWidth / 2, 20, { align: 'center' });
+  
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Generado: ${new Date().toLocaleDateString('es-AR')}`, pageWidth / 2, 30, { align: 'center' });
+  
+  doc.setLineWidth(0.5);
+  doc.line(15, 35, pageWidth - 15, 35);
+  
+  let yPosition = 45;
+  
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Resumen Anual', 15, yPosition);
+  yPosition += 10;
+  
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  
+  const balance = totalIncome - totalExpenses;
+  
+  doc.text(`Ingresos totales: $${totalIncome.toLocaleString('es-AR')}`, 20, yPosition);
+  yPosition += 7;
+  doc.text(`Gastos totales: $${totalExpenses.toLocaleString('es-AR')}`, 20, yPosition);
+  yPosition += 7;
+  
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(balance >= 0 ? 0 : 255, balance >= 0 ? 128 : 0, 0);
+  doc.text(`Balance anual: $${balance.toLocaleString('es-AR')}`, 20, yPosition);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont('helvetica', 'normal');
+  yPosition += 12;
+  
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Detalle Mensual', 15, yPosition);
+  yPosition += 5;
+  
+  const monthlyRows = monthlyData.map(month => [
+    month.name,
+    `$${month.income.toLocaleString('es-AR')}`,
+    `$${month.expenses.toLocaleString('es-AR')}`,
+    `$${month.balance.toLocaleString('es-AR')}`
+  ]);
+  
+  autoTable(doc, {
+  startY: yPosition,
+  head: [['Mes', 'Ingresos', 'Gastos', 'Balance']],
+  body: monthlyRows,
+  theme: 'grid',
+  headStyles: { fillColor: [79, 70, 229], fontStyle: 'bold' },
+  styles: { fontSize: 10 },
+  margin: { left: 15, right: 15 }
+});
+
+  
+  const pageCount = doc.internal.getNumberOfPages();
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(128, 128, 128);
+  doc.text(
+    `Página 1 de ${pageCount}`,
+    pageWidth / 2,
+    doc.internal.pageSize.getHeight() - 10,
+    { align: 'center' }
+  );
+  
+  return doc;
+};

@@ -114,13 +114,16 @@ const App = () => {
         );
       
       case 'income':
-        return (
-          <MonthlyIncomeView 
-            payments={payments} 
-            tenants={tenants} 
-            onBack={() => setView('dashboard')} 
-          />
-        );
+  return (
+    <MonthlyIncomeView 
+      payments={payments} 
+      tenants={tenants}
+      expenses={expenses}
+      properties={properties}
+      onBack={() => setView('dashboard')} 
+    />
+  );
+
       
       case 'expenses':
         return (

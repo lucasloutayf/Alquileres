@@ -1,8 +1,61 @@
 import React, { useMemo } from 'react';
 import StatCard from '../common/StatCard';
 import BarChart from '../common/BarChart';
+import { generateAnnualReport } from '../../utils/pdfGenerator';
+import toast from 'react-hot-toast';
 
-const MonthlyIncomeView = ({ payments, tenants, onBack }) => {
+
+const MonthlyIncomeView = ({ payments, tenants, expenses, properties, onBack }) => {
+    const handleGenerateAnnualReport = () => {
+  try {
+    const currentYear = new Date().getFullYear();
+    
+    const monthlyData = [];
+    for (let month = 0; month < 12; month++) {
+      const monthName = new Date(currentYear, month, 1).toLocaleDateString('es-AR', { month: 'long' });
+      
+      const monthIncome = payments.filter(p => {
+        const date = new Date(p.date);
+        return date.getFullYear() === currentYear && date.getMonth() === month;
+      }).reduce((sum, p) => sum + p.amount, 0);
+      
+      const monthExpenses = (expenses || []).filter(e => {
+  const date = new Date(e.date);
+  return date.getFullYear() === currentYear && date.getMonth() === month;
+}).reduce((sum, e) => sum + (e.amount || 0), 0);
+
+      
+      monthlyData.push({
+        name: monthName.charAt(0).toUpperCase() + monthName.slice(1),
+        income: monthIncome,
+        expenses: monthExpenses,
+        balance: monthIncome - monthExpenses
+      });
+    }
+    
+    const totalIncome = monthlyData.reduce((sum, m) => sum + m.income, 0);
+    const totalExpenses = monthlyData.reduce((sum, m) => sum + m.expenses, 0);
+    
+    const reportData = {
+  year: currentYear,
+  monthlyData,
+  properties: properties || [],
+  tenants: tenants || [],
+  totalIncome,
+  totalExpenses
+};
+
+    
+    const pdf = generateAnnualReport(reportData);
+    pdf.save(`reporte-anual-${currentYear}.pdf`);
+    
+    toast.success('✅ Reporte anual descargado');
+  } catch (error) {
+    console.error('Error generando reporte:', error);
+    toast.error('❌ Error al generar reporte');
+  }
+};
+
   const monthlyData = useMemo(() => {
     const grouped = {};
     payments.forEach(p => {
@@ -25,16 +78,23 @@ const MonthlyIncomeView = ({ payments, tenants, onBack }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <button 
-          onClick={onBack} 
-          className="flex items-center gap-2 px-4 py-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900 rounded-lg transition-colors"
-        >
-          <span className="text-xl">←</span> Volver
-        </button>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Ingresos Mensuales</h1>
-        <div></div>
-      </div>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+  <button 
+    onClick={onBack} 
+    className="flex items-center gap-2 px-4 py-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900 rounded-lg transition-colors"
+  >
+    <span className="text-xl">←</span> Volver
+  </button>
+  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Ingresos Mensuales</h1>
+  <button
+    onClick={handleGenerateAnnualReport}
+    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+  >
+    <span>📊</span>
+    <span>Reporte Anual</span>
+  </button>
+</div>
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <StatCard 
