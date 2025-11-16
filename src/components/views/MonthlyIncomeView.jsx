@@ -1,0 +1,62 @@
+import React, { useMemo } from 'react';
+import StatCard from '../common/StatCard';
+import BarChart from '../common/BarChart';
+
+const MonthlyIncomeView = ({ payments, tenants, onBack }) => {
+  const monthlyData = useMemo(() => {
+    const grouped = {};
+    payments.forEach(p => {
+      const date = new Date(p.date);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      grouped[key] = (grouped[key] || 0) + p.amount;
+    });
+    return Object.entries(grouped)
+      .sort((a,b) => b[0].localeCompare(a[0]))
+      .slice(0, 12)
+      .map(([key, value]) => ({
+        label: new Date(key + '-01').toLocaleDateString('es-AR', { year: 'numeric', month: 'long' }),
+        value
+      }));
+  }, [payments]);
+
+  const thisMonthIncome = monthlyData.length > 0 ? monthlyData[0].value : 0;
+  const lastMonthIncome = monthlyData.length > 1 ? monthlyData[1].value : 0;
+  const change = lastMonthIncome > 0 ? (((thisMonthIncome - lastMonthIncome) / lastMonthIncome) * 100).toFixed(1) : 0;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <button 
+          onClick={onBack} 
+          className="flex items-center gap-2 px-4 py-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900 rounded-lg transition-colors"
+        >
+          <span className="text-xl">←</span> Volver
+        </button>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Ingresos Mensuales</h1>
+        <div></div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <StatCard 
+          title="Ingreso Este Mes" 
+          value={`$${thisMonthIncome.toLocaleString('es-AR')}`} 
+          icon="💰" 
+          colorClass="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800" 
+        />
+        <StatCard 
+          title="Variación vs Mes Anterior" 
+          value={`${change > 0 ? '+' : ''}${change}%`} 
+          icon={change >= 0 ? '📈' : '📉'} 
+          colorClass={change >= 0 
+            ? "bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800" 
+            : "bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800"
+          } 
+        />
+      </div>
+
+      <BarChart data={monthlyData} title="Historial de Ingresos (últimos 12 meses)" />
+    </div>
+  );
+};
+
+export default MonthlyIncomeView;

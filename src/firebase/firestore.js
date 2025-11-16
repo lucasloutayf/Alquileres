@@ -85,6 +85,16 @@ export const addPayment = async (paymentData) => {
   }
 };
 
+// ← AGREGÁ ESTA FUNCIÓN ACÁ
+export const deletePayment = async (paymentId) => {
+  try {
+    await deleteDoc(doc(db, 'payments', paymentId));
+  } catch (error) {
+    console.error("Error deleting payment: ", error);
+    throw error;
+  }
+};
+
 // ===== GASTOS =====
 export const getExpenses = (callback) => {
   const q = query(collection(db, 'expenses'));
