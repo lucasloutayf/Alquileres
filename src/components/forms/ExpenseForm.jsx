@@ -75,7 +75,7 @@ const ExpenseForm = ({ expense, propertyId, properties, onSave, onCancel }) => {
           value={formData.description} 
           onChange={e => handleChange('description', e.target.value)} 
           placeholder="Ej: Reparación de cañería"
-          className={`w-full border ${errors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white`}
+          className={`w-full border ${errors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white`}
         />
         {errors.description && (
           <p className="text-red-500 text-xs mt-1">{errors.description}</p>
@@ -92,7 +92,7 @@ const ExpenseForm = ({ expense, propertyId, properties, onSave, onCancel }) => {
             <select 
               value={formData.propertyId} 
               onChange={e => handleChange('propertyId', e.target.value)} 
-              className={`w-full border ${errors.propertyId ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white`}
+              className={`w-full border ${errors.propertyId ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white`}
             >
               <option value="">Seleccionar propiedad...</option>
               {properties.map(prop => (
@@ -113,7 +113,7 @@ const ExpenseForm = ({ expense, propertyId, properties, onSave, onCancel }) => {
           <select 
             value={formData.category} 
             onChange={e => handleChange('category', e.target.value)} 
-            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white"
           >
             {EXPENSE_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
           </select>
@@ -132,7 +132,7 @@ const ExpenseForm = ({ expense, propertyId, properties, onSave, onCancel }) => {
             onChange={e => handleChange('amount', e.target.value)} 
             placeholder="Ej: 15000"
             min="1"
-            className={`w-full border ${errors.amount ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white`}
+            className={`w-full border ${errors.amount ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white`}
           />
           {errors.amount && (
             <p className="text-red-500 text-xs mt-1">{errors.amount}</p>
@@ -148,7 +148,7 @@ const ExpenseForm = ({ expense, propertyId, properties, onSave, onCancel }) => {
             type="date" 
             value={formData.date} 
             onChange={e => handleChange('date', e.target.value)} 
-            className={`w-full border ${errors.date ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white`}
+            className={`w-full border ${errors.date ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white`}
           />
           {errors.date && (
             <p className="text-red-500 text-xs mt-1">{errors.date}</p>
@@ -166,7 +166,7 @@ const ExpenseForm = ({ expense, propertyId, properties, onSave, onCancel }) => {
         </button>
         <button 
           type="submit" 
-          className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
         >
           Guardar
         </button>

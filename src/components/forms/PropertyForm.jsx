@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Modal from '../common/Modal';
+import Button from '../common/Button';
 import toast from 'react-hot-toast';
 
 const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
@@ -8,7 +8,6 @@ const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
     totalRooms: ''
   });
 
-  // Si hay una propiedad (modo edición), cargar sus datos
   useEffect(() => {
     if (property) {
       setFormData({
@@ -16,7 +15,6 @@ const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
         totalRooms: property.totalRooms || ''
       });
     } else {
-      // Resetear formulario si no hay propiedad (modo crear)
       setFormData({
         address: '',
         totalRooms: ''
@@ -27,7 +25,6 @@ const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Validaciones
     if (!formData.address.trim()) {
       toast.error('La dirección es obligatoria');
       return;
@@ -38,15 +35,12 @@ const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
       return;
     }
 
-    // Enviar datos
     onSubmit({
       ...formData,
       totalRooms: parseInt(formData.totalRooms)
     });
 
-    // Resetear y cerrar
     setFormData({ address: '', totalRooms: '' });
-    onClose();
   };
 
   const handleChange = (e) => {
@@ -58,59 +52,57 @@ const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={property ? 'Editar Propiedad' : 'Agregar Propiedad'}>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Dirección */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Dirección *
-          </label>
-          <input
-            type="text"
-            name="address"
-            required
-            value={formData.address}
-            onChange={handleChange}
-            placeholder="Ej: Calle Falsa 123"
-            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-          />
-        </div>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Dirección <span className="text-rose-500">*</span>
+        </label>
+        <input
+          type="text"
+          name="address"
+          required
+          value={formData.address}
+          onChange={handleChange}
+          placeholder="Ej: Calle Falsa 123, Piso 2, Depto A"
+        />
+      </div>
 
-        {/* Cantidad de habitaciones */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Cantidad de Habitaciones *
-          </label>
-          <input
-            type="number"
-            name="totalRooms"
-            required
-            min="1"
-            value={formData.totalRooms}
-            onChange={handleChange}
-            placeholder="Ej: 5"
-            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-          />
-        </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Cantidad de Habitaciones <span className="text-rose-500">*</span>
+        </label>
+        <input
+          type="number"
+          name="totalRooms"
+          required
+          min="1"
+          value={formData.totalRooms}
+          onChange={handleChange}
+          placeholder="Ej: 5"
+        />
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5">
+          Total de habitaciones disponibles para alquilar en esta propiedad
+        </p>
+      </div>
 
-        {/* Botones */}
-        <div className="flex gap-3 pt-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-          >
-            {property ? 'Guardar Cambios' : 'Agregar Propiedad'}
-          </button>
-        </div>
-      </form>
-    </Modal>
+      <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
+        <Button
+          type="button"
+          onClick={onClose}
+          variant="secondary"
+          className="flex-1"
+        >
+          Cancelar
+        </Button>
+        <Button
+          type="submit"
+          variant="primary"
+          className="flex-1"
+        >
+          {property ? 'Guardar Cambios' : 'Agregar Propiedad'}
+        </Button>
+      </div>
+    </form>
   );
 };
 

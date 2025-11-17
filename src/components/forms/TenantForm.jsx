@@ -1,313 +1,282 @@
-import React, { useState } from 'react';
-import { validateDNI, validateAmount, validateRequired, validateRoomNumber } from '../../utils/validations';
+import React, { useState, useEffect } from 'react';
+import Button from '../common/Button';
+import { Plus, Trash2 } from 'lucide-react';
+import { getTodayFormatted } from '../../utils/dateUtils';
+import toast from 'react-hot-toast';
 
 const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
-  const [formData, setFormData] = useState(() => {
-  if (tenant) {
-    // Migrar emergencyPhone viejo a emergencyPhones nuevo
-    const emergencyPhones = tenant.emergencyPhones || [];
-    
-    // Si tiene el campo viejo (emergencyPhone singular), agregarlo al array
-    if (tenant.emergencyPhone && !emergencyPhones.includes(tenant.emergencyPhone)) {
-      emergencyPhones.push(tenant.emergencyPhone);
-    }
-    
-    return {
-      ...tenant,
-      emergencyPhones
-    };
-  }
-  
-  // Valores por defecto para nuevo inquilino
-  return {
-    name: '', 
-    dni: '', 
-    phone: '', 
+  const [formData, setFormData] = useState({
+    name: '',
+    dni: '',
+    phone: '',
     emergencyPhones: [],
-    roomNumber: '', 
-    entryDate: '', 
-    exitDate: '', 
-    contractStatus: 'activo', 
-    rentAmount: '', 
-    propertyId
+    roomNumber: '',
+    rentAmount: '',
+    entryDate: getTodayFormatted(),
+    exitDate: '',
+    contractStatus: 'activo',
+    propertyId: propertyId
+  });
+
+  const [newEmergencyPhone, setNewEmergencyPhone] = useState('');
+
+  useEffect(() => {
+    if (tenant) {
+      setFormData({
+        name: tenant.name || '',
+        dni: tenant.dni || '',
+        phone: tenant.phone || '',
+        emergencyPhones: tenant.emergencyPhones || [],
+        roomNumber: tenant.roomNumber || '',
+        rentAmount: tenant.rentAmount || '',
+        entryDate: tenant.entryDate || getTodayFormatted(),
+        exitDate: tenant.exitDate || '',
+        contractStatus: tenant.contractStatus || 'activo',
+        propertyId: tenant.propertyId || propertyId
+      });
+    }
+  }, [tenant, propertyId]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
-});
 
+  const handleAddEmergencyPhone = (e) => {
+    e?.preventDefault();
+    
+    if (!newEmergencyPhone.trim()) {
+      toast.error('Ingresa un teléfono válido');
+      return;
+    }
 
-  const [errors, setErrors] = useState({});
+    setFormData(prev => ({
+      ...prev,
+      emergencyPhones: [...prev.emergencyPhones, newEmergencyPhone.trim()]
+    }));
+    setNewEmergencyPhone('');
+  };
 
-  const validateForm = () => {
-    const newErrors = {};
-    
-    const nameErrors = validateRequired(formData.name, 'Nombre');
-    if (nameErrors.length > 0) {
-      newErrors.name = nameErrors[0];
-    }
-    
-    const dniErrors = validateDNI(formData.dni);
-    if (dniErrors.length > 0) {
-      newErrors.dni = dniErrors[0];
-    }
-    
-    const phoneErrors = validateRequired(formData.phone, 'Teléfono');
-    if (phoneErrors.length > 0) {
-      newErrors.phone = phoneErrors[0];
-    }
-    
-    const roomErrors = validateRoomNumber(formData.roomNumber);
-    if (roomErrors.length > 0) {
-      newErrors.roomNumber = roomErrors[0];
-    }
-    
-    const entryDateErrors = validateRequired(formData.entryDate, 'Fecha de entrada');
-    if (entryDateErrors.length > 0) {
-      newErrors.entryDate = entryDateErrors[0];
-    }
-    
-    const rentErrors = validateAmount(formData.rentAmount, 'Monto de alquiler');
-    if (rentErrors.length > 0) {
-      newErrors.rentAmount = rentErrors[0];
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleRemoveEmergencyPhone = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      emergencyPhones: prev.emergencyPhones.filter((_, i) => i !== index)
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    if (validateForm()) {
-      const dataToSave = {
-        ...formData,
-        roomNumber: parseInt(formData.roomNumber),
-        rentAmount: parseInt(formData.rentAmount)
-      };
-      onSave(dataToSave);
+    if (!formData.name.trim()) {
+      toast.error('El nombre es obligatorio');
+      return;
     }
-  };
 
-  const handleChange = (field, value) => {
-    setFormData({...formData, [field]: value});
-    if (errors[field]) {
-      setErrors({...errors, [field]: null});
+    if (!formData.phone.trim()) {
+      toast.error('El teléfono principal es obligatorio');
+      return;
     }
-  };
 
-  // ← NUEVAS FUNCIONES PARA MANEJAR TELÉFONOS DE EMERGENCIA
-  const addEmergencyPhone = () => {
-    setFormData({
-      ...formData,
-      emergencyPhones: [...formData.emergencyPhones, '']
-    });
-  };
-
-  const removeEmergencyPhone = (index) => {
-    const newPhones = formData.emergencyPhones.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      emergencyPhones: newPhones
-    });
-  };
-
-  const updateEmergencyPhone = (index, value) => {
-    const newPhones = [...formData.emergencyPhones];
-    newPhones[index] = value;
-    setFormData({
-      ...formData,
-      emergencyPhones: newPhones
-    });
+    onSave(formData);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Nombre Completo */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Nombre Completo *
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Nombre Completo <span className="text-rose-500">*</span>
           </label>
-          <input 
-            type="text" 
-            value={formData.name} 
-            onChange={e => handleChange('name', e.target.value)} 
-            className={`w-full border ${errors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white`}
+          <input
+            type="text"
+            name="name"
+            required
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Juan Pérez"
           />
-          {errors.name && (
-            <p className="text-red-500 text-xs mt-1">{errors.name}</p>
-          )}
         </div>
 
-        {/* DNI */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            DNI *
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            DNI <span className="text-rose-500">*</span>
           </label>
-          <input 
-            type="text" 
-            value={formData.dni} 
-            onChange={e => handleChange('dni', e.target.value)} 
+          <input
+            type="text"
+            name="dni"
+            required
+            value={formData.dni}
+            onChange={handleChange}
             placeholder="12345678"
-            maxLength="8"
-            className={`w-full border ${errors.dni ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white`}
           />
-          {errors.dni && (
-            <p className="text-red-500 text-xs mt-1">{errors.dni}</p>
-          )}
-        </div>
-
-        {/* Teléfono Principal */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Teléfono Principal *
-          </label>
-          <input 
-            type="tel" 
-            value={formData.phone} 
-            onChange={e => handleChange('phone', e.target.value)} 
-            className={`w-full border ${errors.phone ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white`}
-          />
-          {errors.phone && (
-            <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
-          )}
-        </div>
-
-        {/* Número de Habitación */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Número de Habitación *
-          </label>
-          <input 
-            type="number" 
-            value={formData.roomNumber} 
-            onChange={e => handleChange('roomNumber', e.target.value)} 
-            className={`w-full border ${errors.roomNumber ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white`}
-          />
-          {errors.roomNumber && (
-            <p className="text-red-500 text-xs mt-1">{errors.roomNumber}</p>
-          )}
-        </div>
-
-        {/* Fecha de Entrada */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Fecha de Entrada *
-          </label>
-          <input 
-            type="date" 
-            value={formData.entryDate} 
-            onChange={e => handleChange('entryDate', e.target.value)} 
-            className={`w-full border ${errors.entryDate ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white`}
-          />
-          {errors.entryDate && (
-            <p className="text-red-500 text-xs mt-1">{errors.entryDate}</p>
-          )}
-        </div>
-
-        {/* Fecha de Salida */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Fecha de Salida (opcional)
-          </label>
-          <input 
-            type="date" 
-            value={formData.exitDate || ''} 
-            onChange={e => handleChange('exitDate', e.target.value || null)} 
-            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white" 
-          />
-        </div>
-
-        {/* Monto de Alquiler */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Monto de Alquiler *
-          </label>
-          <input 
-            type="number" 
-            value={formData.rentAmount} 
-            onChange={e => handleChange('rentAmount', e.target.value)} 
-            placeholder="0"
-            min="1"
-            className={`w-full border ${errors.rentAmount ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white`}
-          />
-          {errors.rentAmount && (
-            <p className="text-red-500 text-xs mt-1">{errors.rentAmount}</p>
-          )}
-        </div>
-
-        {/* Estado del Contrato */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Estado del Contrato
-          </label>
-          <select 
-            value={formData.contractStatus} 
-            onChange={e => handleChange('contractStatus', e.target.value)} 
-            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-          >
-            <option value="activo">Activo</option>
-            <option value="finalizado">Finalizado</option>
-          </select>
         </div>
       </div>
 
-      {/* SECCIÓN DE TELÉFONOS DE EMERGENCIA */}
-      <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-        <div className="flex items-center justify-between mb-3">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Teléfonos de Contacto de Emergencia
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Teléfono Principal <span className="text-rose-500">*</span>
+        </label>
+        <input
+          type="tel"
+          name="phone"
+          required
+          value={formData.phone}
+          onChange={handleChange}
+          placeholder="+54 9 11 1234-5678"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Número de Habitación <span className="text-rose-500">*</span>
           </label>
-          <button
-            type="button"
-            onClick={addEmergencyPhone}
-            className="flex items-center gap-1 px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
-          >
-            <span className="text-lg">+</span>
-            <span>Agregar</span>
-          </button>
+          <input
+            type="text"
+            name="roomNumber"
+            required
+            value={formData.roomNumber}
+            onChange={handleChange}
+            placeholder="12"
+          />
         </div>
 
-        {formData.emergencyPhones.length === 0 ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-            No hay teléfonos de emergencia agregados
-          </p>
-        ) : (
-          <div className="space-y-2">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Monto de Alquiler <span className="text-rose-500">*</span>
+          </label>
+          <input
+            type="number"
+            name="rentAmount"
+            required
+            value={formData.rentAmount}
+            onChange={handleChange}
+            placeholder="70000"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Fecha de Entrada <span className="text-rose-500">*</span>
+          </label>
+          <input
+            type="date"
+            name="entryDate"
+            required
+            value={formData.entryDate}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Fecha de Salida (opcional)
+          </label>
+          <input
+            type="date"
+            name="exitDate"
+            value={formData.exitDate}
+            onChange={handleChange}
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Estado del Contrato <span className="text-rose-500">*</span>
+        </label>
+        <select
+          name="contractStatus"
+          value={formData.contractStatus}
+          onChange={handleChange}
+        >
+          <option value="activo">Activo</option>
+          <option value="finalizado">Finalizado</option>
+        </select>
+      </div>
+
+      <div className="border-t border-gray-200 dark:border-gray-800 pt-5">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          Teléfonos de Contacto de Emergencia
+        </label>
+
+        {formData.emergencyPhones.length > 0 && (
+          <div className="space-y-2 mb-3">
             {formData.emergencyPhones.map((phone, index) => (
-              <div key={index} className="flex gap-2">
+              <div key={index} className="flex items-center gap-2">
                 <input
-                  type="tel"
+                  type="text"
                   value={phone}
-                  onChange={(e) => updateEmergencyPhone(index, e.target.value)}
-                  placeholder={`Teléfono de emergencia ${index + 1}`}
-                  className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                  disabled
+                  className="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300"
                 />
-                <button
+                <Button
                   type="button"
-                  onClick={() => removeEmergencyPhone(index)}
-                  className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleRemoveEmergencyPhone(index);
+                  }}
+                  className="!p-2 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-rose-600 dark:text-rose-400"
                 >
-                  🗑️
-                </button>
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
             ))}
           </div>
         )}
+
+        <div className="flex gap-2">
+          <input
+            type="tel"
+            value={newEmergencyPhone}
+            onChange={(e) => setNewEmergencyPhone(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAddEmergencyPhone(e);
+              }
+            }}
+            placeholder="+54 9 11 8765-4321"
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            icon={<Plus className="w-4 h-4" />}
+            onClick={(e) => {
+              e.preventDefault();
+              handleAddEmergencyPhone(e);
+            }}
+          >
+            Agregar
+          </Button>
+        </div>
+        
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+          Presiona Enter o click en "Agregar" para añadir un teléfono
+        </p>
       </div>
 
-      <div className="flex gap-3 justify-end pt-4">
-        <button 
-          type="button" 
-          onClick={onCancel} 
-          className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+      <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
+        <Button
+          type="button"
+          onClick={onCancel}
+          variant="secondary"
+          className="flex-1"
         >
           Cancelar
-        </button>
-        <button 
-          type="submit" 
-          className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+        </Button>
+        <Button
+          type="submit"
+          variant="primary"
+          className="flex-1"
         >
-          Guardar
-        </button>
+          {tenant ? 'Guardar Cambios' : 'Agregar Inquilino'}
+        </Button>
       </div>
     </form>
   );

@@ -91,12 +91,12 @@ const CalendarView = ({ tenants, payments, properties, onBack }) => {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <button 
           onClick={onBack} 
-          className="flex items-center gap-2 px-4 py-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900 rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-lg transition-colors"
         >
           <span className="text-xl">←</span> Volver
         </button>
         <div className="flex items-center gap-2">
-          <Calendar className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+          <Calendar className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Calendario de Vencimientos</h1>
         </div>
         <div></div>
@@ -110,7 +110,7 @@ const CalendarView = ({ tenants, payments, properties, onBack }) => {
         <select
           value={selectedProperty}
           onChange={e => setSelectedProperty(e.target.value)}
-          className="w-full md:w-auto border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+          className="w-full md:w-auto border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white"
         >
           <option value="all">Todas las propiedades</option>
           {properties.map(prop => (
@@ -164,7 +164,7 @@ const CalendarView = ({ tenants, payments, properties, onBack }) => {
                 key={dayData.day}
                 className={`aspect-square border rounded-lg p-2 relative ${
                   dayData.isToday 
-                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900' 
+                    ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900' 
                     : 'border-gray-300 dark:border-gray-600'
                 } ${
                   hasOverdue 
@@ -210,7 +210,7 @@ const CalendarView = ({ tenants, payments, properties, onBack }) => {
             <span className="text-sm text-gray-700 dark:text-gray-300">Vence en el mes</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 border-2 border-indigo-500 rounded"></div>
+            <div className="w-4 h-4 border-2 border-emerald-500 rounded"></div>
             <span className="text-sm text-gray-700 dark:text-gray-300">Hoy</span>
           </div>
         </div>

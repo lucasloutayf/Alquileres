@@ -103,7 +103,7 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
               required 
               value={amount} 
               onChange={e => setAmount(e.target.value)} 
-              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white" 
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white" 
             />
           </div>
           <div>
@@ -115,7 +115,7 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
               required 
               value={date} 
               onChange={e => setDate(e.target.value)} 
-              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white" 
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white" 
             />
           </div>
           <div>
@@ -127,7 +127,7 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
               required
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white"
             />
           </div>
         </div>
@@ -149,7 +149,7 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
                     setAdjustmentReason('');
                   }
                 }}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white"
               >
                 <option value="none">Sin ajuste</option>
                 <option value="surcharge">Multa/Cargo</option>
@@ -165,7 +165,7 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
                     placeholder="Monto" 
                     value={adjustment} 
                     onChange={e => setAdjustment(e.target.value)} 
-                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white" 
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white" 
                   />
                 </div>
                 <div>
@@ -174,7 +174,7 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
                     placeholder="Motivo" 
                     value={adjustmentReason} 
                     onChange={e => setAdjustmentReason(e.target.value)} 
-                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white" 
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white" 
                   />
                 </div>
               </>

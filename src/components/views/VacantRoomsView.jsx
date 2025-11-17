@@ -22,7 +22,7 @@ const VacantRoomsView = ({ properties, tenants, onBack }) => {
       <div className="flex items-center justify-between">
         <button 
           onClick={onBack} 
-          className="flex items-center gap-2 px-4 py-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900 rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-lg transition-colors"
         >
           <span className="text-xl">←</span> Volver
         </button>
@@ -57,7 +57,7 @@ const VacantRoomsView = ({ properties, tenants, onBack }) => {
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
                 <div 
-                  className="bg-blue-600 dark:bg-blue-400 h-4 rounded-full transition-all duration-500 flex items-center justify-end pr-2" 
+                  className="bg-emerald-600 dark:bg-emerald-400 h-4 rounded-full transition-all duration-500 flex items-center justify-end pr-2" 
                   style={{width: `${100 - data.percentage}%`}}
                 >
                   <span className="text-xs font-bold text-white">{100 - data.percentage}% ocupado</span>

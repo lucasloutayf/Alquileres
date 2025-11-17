@@ -34,7 +34,7 @@ const Header = ({ user, theme, toggleTheme, view, setView }) => {
       <div className="px-4 py-3">
         <div className="flex items-center justify-between gap-2">
           {/* Logo */}
-          <h1 className="text-xl md:text-2xl font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+          <h1 className="text-xl md:text-2xl font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
             Gestor de Alquileres
           </h1>
           
@@ -46,7 +46,7 @@ const Header = ({ user, theme, toggleTheme, view, setView }) => {
                 <button 
                   key={item.key}
                   onClick={() => setView(item.key)} 
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors whitespace-nowrap"
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors whitespace-nowrap"
                 >
                   <Icon className="w-4 h-4" />
                   <span>{item.label}</span>

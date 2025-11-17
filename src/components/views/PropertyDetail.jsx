@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { DollarSign, Home, TrendingDown, FileText, Trash2 } from 'lucide-react';
+import { DollarSign, Home, TrendingDown, FileText, Trash2, Plus, Edit } from 'lucide-react';
 import StatCard from '../common/StatCard';
 import Modal from '../common/Modal';
 import ConfirmModal from '../common/ConfirmModal';
+import Button from '../common/Button';
 import TenantForm from '../forms/TenantForm';
 import PaymentsModal from '../forms/PaymentsModal';
 import ExpenseForm from '../forms/ExpenseForm';
@@ -136,7 +137,7 @@ const PropertyDetail = ({
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 px-4 py-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900 rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
         >
           <span className="text-xl">←</span> Volver
         </button>
@@ -147,51 +148,52 @@ const PropertyDetail = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard
           title="Ingreso Mensual Potencial"
-          value={totalMonthlyIncome.toLocaleString('es-AR')}
+          value={`$${totalMonthlyIncome.toLocaleString('es-AR')}`}
           icon={<DollarSign className="w-6 h-6" />}
-          colorClass="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800"
+          colorClass="green"
         />
         <StatCard
           title="Habitaciones Vacías"
           value={vacantRooms}
           icon={<Home className="w-6 h-6" />}
-          colorClass="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800"
+          colorClass="blue"
         />
         <StatCard
           title="Gastos Totales"
-          value={totalExpensesAmount.toLocaleString('es-AR')}
+          value={`$${totalExpensesAmount.toLocaleString('es-AR')}`}
           icon={<TrendingDown className="w-6 h-6" />}
-          colorClass="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800"
+          colorClass="red"
         />
       </div>
 
       {/* TABLA DE INQUILINOS */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Inquilinos</h2>
-          <button
+          <Button 
+            variant="primary"
+            icon={<Plus className="w-4 h-4" />}
             onClick={() => { setEditingTenant(null); setModalOpen(true); }}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
           >
             Agregar Inquilino
-          </button>
+          </Button>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-900">
+            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Nombre
                 </th>
                 <th 
                   onClick={() => handleSort('room')}
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
                 >
                   <div className="flex items-center gap-1">
                     Habitación
                     {sortConfig.key === 'room' && (
-                      <span className="text-indigo-600">
+                      <span className="text-gray-900 dark:text-white">
                         {sortConfig.direction === 'asc' ? '↑' : '↓'}
                       </span>
                     )}
@@ -199,12 +201,12 @@ const PropertyDetail = ({
                 </th>
                 <th 
                   onClick={() => handleSort('rent')}
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
                 >
                   <div className="flex items-center gap-1">
                     Alquiler
                     {sortConfig.key === 'rent' && (
-                      <span className="text-indigo-600">
+                      <span className="text-gray-900 dark:text-white">
                         {sortConfig.direction === 'asc' ? '↑' : '↓'}
                       </span>
                     )}
@@ -212,12 +214,12 @@ const PropertyDetail = ({
                 </th>
                 <th 
                   onClick={() => handleSort('status')}
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
                 >
                   <div className="flex items-center gap-1">
                     Estado
                     {sortConfig.key === 'status' && (
-                      <span className="text-indigo-600">
+                      <span className="text-gray-900 dark:text-white">
                         {sortConfig.direction === 'asc' ? '↑' : '↓'}
                       </span>
                     )}
@@ -233,8 +235,8 @@ const PropertyDetail = ({
               {propTenants.map((tenant) => {
                 const paymentStatus = getTenantPaymentStatus(tenant, payments);
                 return (
-                  <tr key={tenant.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
-                    <td className="px-4 py-4 whitespace-nowrap text-gray-900 dark:text-white">
+                  <tr key={tenant.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <td className="px-4 py-4 whitespace-nowrap text-gray-900 dark:text-white font-medium">
                       {tenant.name}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-gray-700 dark:text-gray-300">
@@ -248,8 +250,8 @@ const PropertyDetail = ({
                         className={`px-3 py-1 rounded-full text-xs font-medium ${
                           tenant.contractStatus === 'activo'
                             ? paymentStatus.status === 'upToDate'
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
+                              : 'bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200'
                             : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                         }`}
                       >
@@ -262,31 +264,40 @@ const PropertyDetail = ({
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex gap-2">
-                        <button
+                        <Button 
+                          variant="secondary" 
+                          size="sm"
                           onClick={() => handlePaymentClick(tenant)}
-                          className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
                         >
                           Pagos
-                        </button>
-                        <button
+                        </Button>
+
+                        <Button 
+                          variant="secondary" 
+                          size="sm"
                           onClick={() => { setEditingTenant(tenant); setModalOpen(true); }}
-                          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
                         >
-                          Editar
-                        </button>
-                        <button
+                          <Edit className="w-4 h-4" />
+                        </Button>
+
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
                           onClick={() => handleGenerateTenantReport(tenant)}
-                          className="p-1 bg-purple-600 text-white rounded hover:bg-purple-700"
                           title="Descargar reporte"
                         >
                           <FileText className="w-4 h-4" />
-                        </button>
-                        <button
+                        </Button>
+                        
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
                           onClick={() => { setItemToDelete(tenant); setConfirmModalOpen(true); }}
-                          className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
+                          title="Eliminar inquilino"
+                          className="text-rose-600 hover:text-rose-700"
                         >
                           <Trash2 className="w-4 h-4" />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -298,20 +309,21 @@ const PropertyDetail = ({
       </div>
 
       {/* TABLA DE GASTOS */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Gastos</h2>
-          <button
+          <Button 
+            variant="primary"
+            icon={<Plus className="w-4 h-4" />}
             onClick={() => setExpenseModalOpen(true)}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
           >
             Agregar Gasto
-          </button>
+          </Button>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-900">
+            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Descripción
@@ -332,7 +344,7 @@ const PropertyDetail = ({
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {propExpenses.sort((a, b) => new Date(b.date) - new Date(a.date)).map((expense) => (
-                <tr key={expense.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
+                <tr key={expense.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                   <td className="px-4 py-4 text-gray-900 dark:text-white">{expense.description}</td>
                   <td className="px-4 py-4 text-gray-700 dark:text-gray-300">{expense.category}</td>
                   <td className="px-4 py-4 text-gray-900 dark:text-white font-semibold">
@@ -342,12 +354,15 @@ const PropertyDetail = ({
                     {new Date(expense.date).toLocaleDateString('es-AR')}
                   </td>
                   <td className="px-4 py-4">
-                    <button
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
                       onClick={() => { setItemToDelete(expense); setConfirmModalOpen(true); }}
-                      className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
+                      title="Eliminar gasto"
+                      className="text-rose-600 hover:text-rose-700"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))}

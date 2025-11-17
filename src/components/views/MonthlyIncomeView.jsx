@@ -79,14 +79,14 @@ const MonthlyIncomeView = ({ payments, tenants, expenses, properties, onBack }) 
       <div className="flex items-center justify-between flex-wrap gap-4">
         <button 
           onClick={onBack} 
-          className="flex items-center gap-2 px-4 py-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900 rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-lg transition-colors"
         >
           <span className="text-xl">←</span> Volver
         </button>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Ingresos Mensuales</h1>
         <button
           onClick={handleGenerateAnnualReport}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
         >
           <BarChart3 className="w-5 h-5" />
           <span>Reporte Anual</span>

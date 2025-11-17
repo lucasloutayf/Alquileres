@@ -18,7 +18,7 @@ const DebtorsView = ({ tenants, payments, onBack }) => {
       <div className="flex items-center justify-between">
         <button 
           onClick={onBack} 
-          className="flex items-center gap-2 px-4 py-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900 rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-lg transition-colors"
         >
           <span className="text-xl">←</span> Volver
         </button>
