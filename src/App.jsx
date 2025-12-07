@@ -1,10 +1,12 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Auth from './components/Auth';
 import Layout from './components/layout/Layout';
 import ResetPassword from './components/auth/ResetPassword';
+import VerifyEmail from './components/auth/VerifyEmail';
+import { initGA, logPageView } from './utils/analytics';
 
 // Lazy loading de vistas para code splitting
 const Dashboard = lazy(() => import('./components/views/Dashboard'));
@@ -14,6 +16,8 @@ const VacantRoomsView = lazy(() => import('./components/views/VacantRoomsView'))
 const CalendarView = lazy(() => import('./components/views/CalendarView'));
 const MonthlyIncomeView = lazy(() => import('./components/views/MonthlyIncomeView'));
 const ExpensesView = lazy(() => import('./components/views/ExpensesView'));
+const TermsOfService = lazy(() => import('./components/legal/TermsOfService'));
+const PrivacyPolicy = lazy(() => import('./components/legal/PrivacyPolicy'));
 
 // Componente de carga para Suspense
 const PageLoader = () => (
@@ -35,7 +39,12 @@ const AuthActionHandler = () => {
     return <ResetPassword />;
   }
   
-  // Para otros modos (verifyEmail, etc), redirigir al login
+  // Si es verifyEmail, mostrar la página de verificación
+  if (mode === 'verifyEmail') {
+    return <VerifyEmail />;
+  }
+  
+  // Para otros modos, redirigir al login
   return <Navigate to="/" replace />;
 };
 
@@ -61,6 +70,17 @@ const ProtectedRoutes = ({ user, theme }) => {
 const AppContent = () => {
   const { user, loading } = useAuth();
   const [theme, setTheme] = useState('light');
+  const location = useLocation();
+
+  // Inicializar Google Analytics
+  useEffect(() => {
+    initGA();
+  }, []);
+
+  // Registrar vistas de página
+  useEffect(() => {
+    logPageView(location.pathname);
+  }, [location]);
 
   // Aplicar tema
   useEffect(() => {
@@ -75,21 +95,25 @@ const AppContent = () => {
   }
 
   return (
-    <Routes>
-      {/* Ruta para acciones de Firebase Auth (reset password, verify email) */}
-      <Route path="/auth/action" element={<AuthActionHandler />} />
-      
-      {/* Rutas públicas y protegidas */}
-      <Route path="/*" element={
-        user ? (
-          <Layout user={user} theme={theme} toggleTheme={toggleTheme}>
-            <ProtectedRoutes user={user} theme={theme} />
-          </Layout>
-        ) : (
-          <Auth />
-        )
-      } />
-    </Routes>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        {/* Rutas públicas (accesibles sin login) */}
+        <Route path="/auth/action" element={<AuthActionHandler />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        
+        {/* Rutas protegidas o login */}
+        <Route path="/*" element={
+          user ? (
+            <Layout user={user} theme={theme} toggleTheme={toggleTheme}>
+              <ProtectedRoutes user={user} theme={theme} />
+            </Layout>
+          ) : (
+            <Auth />
+          )
+        } />
+      </Routes>
+    </Suspense>
   );
 };
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Building2, Mail, ArrowLeft, KeyRound } from 'lucide-react';
 import { 
   signInWithEmailAndPassword, 
@@ -86,8 +87,11 @@ const Auth = () => {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
       
-      // Enviar email de verificación
-      await sendEmailVerification(result.user);
+      // Enviar email de verificación con URL personalizada
+      await sendEmailVerification(result.user, {
+        url: `${window.location.origin}/auth/action`,
+        handleCodeInApp: true
+      });
       
       // Cerrar sesión hasta que verifique
       await auth.signOut();
@@ -189,7 +193,10 @@ const Auth = () => {
     
     try {
       const result = await signInWithEmailAndPassword(auth, registeredEmail, password);
-      await sendEmailVerification(result.user);
+      await sendEmailVerification(result.user, {
+        url: `${window.location.origin}/auth/action`,
+        handleCodeInApp: true
+      });
       await auth.signOut();
       toast.success('Email de verificación reenviado');
     } catch (error) {
@@ -520,7 +527,10 @@ const Auth = () => {
 
         {!isLogin && (
           <p className="mt-4 text-xs text-center text-gray-500 dark:text-gray-400">
-            Al registrarte, aceptas nuestros términos de servicio
+            Al registrarte, aceptas nuestros{' '}
+            <Link to="/terms" className="text-blue-600 dark:text-blue-400 hover:underline">Términos de Servicio</Link>
+            {' '}y{' '}
+            <Link to="/privacy" className="text-blue-600 dark:text-blue-400 hover:underline">Política de Privacidad</Link>
           </p>
         )}
       </div>
