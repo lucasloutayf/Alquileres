@@ -22,7 +22,7 @@ export const generateMonthlyReport = (data) => {
     expenses = [],
     properties = [],
     tenants = [],
-    payments = [],
+
     debtors = []
   } = data || {};
 
@@ -31,7 +31,6 @@ export const generateMonthlyReport = (data) => {
   const safeExpenses = arr(expenses);
   const safeProperties = arr(properties);
   const safeTenants = arr(tenants);
-  const safePayments = arr(payments);
   const safeDebtors = arr(debtors);
 
   const doc = new jsPDF();
@@ -326,15 +325,12 @@ export const generateAnnualReport = (data) => {
   const {
     year,
     monthlyData = [],
-    properties = [],
-    tenants = [],
     totalIncome = 0,
     totalExpenses = 0
   } = data || {};
 
   const safeMonthlyData = arr(monthlyData);
-  const safeProperties = arr(properties);
-  const safeTenants = arr(tenants);
+
 
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();

@@ -2,32 +2,83 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
     function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
+      return isAuthenticated() && request.auth.uid == userId;
     }
     
+    // Validación de Schema para Propiedades
+    function isValidProperty() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['address', 'userId', 'createdAt']) &&
+             data.userId == request.auth.uid &&
+             data.address is string &&
+             data.address.size() > 0 &&
+             data.address.size() < 200;
+    }
+
+    // Validación de Schema para Inquilinos
+    function isValidTenant() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['name', 'dni', 'phone', 'propertyId', 'userId', 'rentAmount', 'entryDate', 'contractStatus']) &&
+             data.userId == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.dni is string && data.dni.size() >= 7 && data.dni.size() <= 10 &&
+             data.phone is string && data.phone.size() > 0 &&
+             data.propertyId is string && data.propertyId.size() > 0 &&
+             data.rentAmount is number && data.rentAmount >= 0 &&
+             data.entryDate is string &&
+             data.contractStatus in ['activo', 'finalizado'];
+    }
+
+    // Validación de Schema para Pagos
+    function isValidPayment() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['tenantId', 'amount', 'date', 'userId']) &&
+             data.userId == request.auth.uid &&
+             data.tenantId is string && data.tenantId.size() > 0 &&
+             data.amount is number && data.amount > 0 &&
+             data.date is string;
+    }
+
+    // Validación de Schema para Gastos
+    function isValidExpense() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['propertyId', 'amount', 'date', 'userId', 'description', 'category']) &&
+             data.userId == request.auth.uid &&
+             data.propertyId is string && data.propertyId.size() > 0 &&
+             data.amount is number && data.amount > 0 &&
+             data.date is string &&
+             data.description is string && data.description.size() > 0 && data.description.size() < 500 &&
+             data.category is string;
+    }
+
     match /properties/{propertyId} {
       allow read: if isOwner(resource.data.userId);
-      allow create: if isOwner(request.resource.data.userId);
-      allow update, delete: if isOwner(resource.data.userId);
+      allow create: if isOwner(request.resource.data.userId) && isValidProperty();
+      allow update: if isOwner(resource.data.userId) && isValidProperty();
+      allow delete: if isOwner(resource.data.userId);
     }
     
     match /tenants/{tenantId} {
-      allow read: if isOwner(resource.data.userId);
-      allow create: if isOwner(request.resource.data.userId);
-      allow update, delete: if isOwner(resource.data.userId);
+      allow read, delete: if isOwner(resource.data.userId);
+      allow create: if isOwner(request.resource.data.userId) && isValidTenant();
+      allow update: if isOwner(resource.data.userId) && isValidTenant();
     }
     
     match /payments/{paymentId} {
-      allow read: if isOwner(resource.data.userId);
-      allow create: if isOwner(request.resource.data.userId);
-      allow update, delete: if isOwner(resource.data.userId);
+      allow read, delete: if isOwner(resource.data.userId);
+      allow create: if isOwner(request.resource.data.userId) && isValidPayment();
+      allow update: if isOwner(resource.data.userId) && isValidPayment();
     }
     
     match /expenses/{expenseId} {
-      allow read: if isOwner(resource.data.userId);
-      allow create: if isOwner(request.resource.data.userId);
-      allow update, delete: if isOwner(resource.data.userId);
+      allow read, delete: if isOwner(resource.data.userId);
+      allow create: if isOwner(request.resource.data.userId) && isValidExpense();
+      allow update: if isOwner(resource.data.userId) && isValidExpense();
     }
   }
 }

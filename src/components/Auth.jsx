@@ -8,8 +8,9 @@ import {
 import { auth } from '../firebase/config';
 import Button from './common/Button';
 import toast from 'react-hot-toast';
+import { logger } from '../utils/logger';
 
-const Auth = ({ onLogin }) => {
+const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,9 +24,8 @@ const Auth = ({ onLogin }) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast.success('¡Bienvenido!');
-      onLogin();
     } catch (error) {
-      console.error('Error:', error.code);
+      logger.error('Auth error:', error.code);
       
       switch (error.code) {
         case 'auth/wrong-password':
@@ -67,9 +67,8 @@ const Auth = ({ onLogin }) => {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       toast.success('¡Cuenta creada exitosamente!');
-      onLogin();
     } catch (error) {
-      console.error('Error:', error.code);
+      logger.error('Auth error:', error.code);
       
       switch (error.code) {
         case 'auth/email-already-in-use':
@@ -150,42 +149,48 @@ const Auth = ({ onLogin }) => {
 
         <form onSubmit={isLogin ? handleLogin : handleRegister} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="auth-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Email
             </label>
             <input
+              id="auth-email"
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="tu@email.com"
+              autoComplete="email"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="auth-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Contraseña
             </label>
             <input
+              id="auth-password"
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
+              autoComplete={isLogin ? "current-password" : "new-password"}
             />
           </div>
 
           {!isLogin && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="auth-confirm-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Confirmar Contraseña
               </label>
               <input
+                id="auth-confirm-password"
                 type="password"
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
+                autoComplete="new-password"
               />
             </div>
           )}

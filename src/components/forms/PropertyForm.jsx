@@ -1,70 +1,56 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { propertySchema } from '../../schemas/propertySchema';
 import Button from '../common/Button';
-import toast from 'react-hot-toast';
 
 const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
-  const [formData, setFormData] = useState({
-    address: '',
-    totalRooms: ''
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting }
+  } = useForm({
+    resolver: zodResolver(propertySchema),
+    defaultValues: {
+      address: '',
+      totalRooms: ''
+    }
   });
 
   useEffect(() => {
-    if (property) {
-      setFormData({
-        address: property.address || '',
-        totalRooms: property.totalRooms || ''
-      });
-    } else {
-      setFormData({
-        address: '',
-        totalRooms: ''
+    if (isOpen) {
+      reset({
+        address: property?.address || '',
+        totalRooms: property?.totalRooms || ''
       });
     }
-  }, [property, isOpen]);
+  }, [property, isOpen, reset]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!formData.address.trim()) {
-      toast.error('La dirección es obligatoria');
-      return;
-    }
-
-    if (!formData.totalRooms || formData.totalRooms < 1) {
-      toast.error('Debe tener al menos 1 habitación');
-      return;
-    }
-
-    onSubmit({
-      ...formData,
-      totalRooms: parseInt(formData.totalRooms)
-    });
-
-    setFormData({ address: '', totalRooms: '' });
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const onFormSubmit = async (data) => {
+    await onSubmit(data);
+    reset();
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-5">
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Dirección <span className="text-rose-500">*</span>
         </label>
         <input
           type="text"
-          name="address"
-          required
-          value={formData.address}
-          onChange={handleChange}
+          {...register('address')}
+          className={`w-full px-4 py-2 rounded-lg border ${
+            errors.address 
+              ? 'border-rose-500 focus:ring-rose-500' 
+              : 'border-gray-200 dark:border-gray-700 focus:ring-emerald-500'
+          } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:border-transparent outline-none transition-all`}
           placeholder="Ej: Calle Falsa 123, Piso 2, Depto A"
         />
+        {errors.address && (
+          <p className="text-sm text-rose-500 mt-1">{errors.address.message}</p>
+        )}
       </div>
 
       <div>
@@ -73,22 +59,29 @@ const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
         </label>
         <input
           type="number"
-          name="totalRooms"
-          required
-          min="1"
-          value={formData.totalRooms}
-          onChange={handleChange}
+          {...register('totalRooms', { valueAsNumber: true })}
+          className={`w-full px-4 py-2 rounded-lg border ${
+            errors.totalRooms 
+              ? 'border-rose-500 focus:ring-rose-500' 
+              : 'border-gray-200 dark:border-gray-700 focus:ring-emerald-500'
+          } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:border-transparent outline-none transition-all`}
           placeholder="Ej: 5"
         />
+        {errors.totalRooms && (
+          <p className="text-sm text-rose-500 mt-1">{errors.totalRooms.message}</p>
+        )}
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5">
           Total de habitaciones disponibles para alquilar en esta propiedad
         </p>
       </div>
 
-      <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
+      <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
         <Button
           type="button"
-          onClick={onClose}
+          onClick={() => {
+            reset();
+            onClose();
+          }}
           variant="secondary"
           className="flex-1"
         >
@@ -96,8 +89,9 @@ const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
         </Button>
         <Button
           type="submit"
-          variant="primary"
+          variant="default"
           className="flex-1"
+          disabled={isSubmitting}
         >
           {property ? 'Guardar Cambios' : 'Agregar Propiedad'}
         </Button>

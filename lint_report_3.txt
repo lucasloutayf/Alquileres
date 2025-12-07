@@ -1,0 +1,54 @@
+
+> gestor-alquileres@0.0.0 lint
+> eslint .
+
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\common\Button.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\common\Card.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\common\Input.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\common\IsometricBuilding.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\common\ScrollReveal.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\common\StatCard3D.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\common\Table.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\layout\Header.jsx
+  19:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\layout\Layout.jsx
+  4:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\properties\PropertyCard.jsx
+  7:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\views\CalendarView.jsx
+  3:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\views\Dashboard.jsx
+  4:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\views\PropertyDetail.jsx
+  34:14  error  'propertiesLoading' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  39:14  error  'tenantsLoading' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u     no-unused-vars
+  48:14  error  'paymentsLoading' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u    no-unused-vars
+  54:14  error  'expensesLoading' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u    no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\utils\pdfGenerator.js
+   25:5  error  'payments' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u    no-unused-vars
+  328:5  error  'properties' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  329:5  error  'tenants' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u     no-unused-vars
+
+Ô£û 19 problems (19 errors, 0 warnings)
+

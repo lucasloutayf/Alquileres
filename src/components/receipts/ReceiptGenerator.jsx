@@ -1,6 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { Download, Copy, Share2, Printer, Clock } from 'lucide-react';
+import { Download, Copy, Share2, Printer, Clock, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
+import Button from '../common/Button';
+import { logger } from '../../utils/logger';
 
 const ReceiptGenerator = ({ payment, tenant, onClose }) => {
   const receiptRef = useRef();
@@ -34,7 +36,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
       link.href = image;
       link.click();
     } catch (error) {
-      console.error('Error al descargar:', error);
+      logger.error('Error al descargar:', error);
       toast.error('Error al generar la imagen');
     }
   };
@@ -53,12 +55,12 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
             new ClipboardItem({ 'image/png': blob })
           ]);
           toast.success('¡Imagen copiada! Pegá en WhatsApp Web con Ctrl+V');
-        } catch (err) {
+        } catch {
           toast.error('No se pudo copiar. Usá "Descargar" en su lugar.');
         }
       }, 'image/png', 1.0);
       
-    } catch (error) {
+    } catch {
       toast.error('Error al copiar la imagen');
     }
   };
@@ -75,33 +77,34 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
       const canvas = await generateCanvas();
 
       canvas.toBlob(async (blob) => {
-        try {
-          if (!blob) {
-            throw new Error('No se pudo generar la imagen');
-          }
-
           const timestamp = Date.now();
           const filename = `recibo_${tenant.name.replace(/\s+/g, '_')}_${timestamp}.png`;
-          const file = new File([blob], filename, { 
-            type: 'image/png',
-            lastModified: timestamp
-          });
 
-          await navigator.share({
-            files: [file],
-            title: 'Recibo de Pago',
-            text: `Recibo - ${tenant.name} - $${payment.amount.toLocaleString('es-AR')}`
-          });
+          try {
+            if (!blob) {
+              throw new Error('No se pudo generar la imagen');
+            }
 
-          console.log('Compartido exitosamente');
+            const file = new File([blob], filename, { 
+              type: 'image/png',
+              lastModified: timestamp
+            });
 
-        } catch (shareError) {
-          if (shareError.name === 'AbortError') {
-            console.log('Usuario canceló');
-          } else {
-            console.error('Error al compartir:', shareError);
-            const link = document.createElement('a');
-            link.download = filename;
+            await navigator.share({
+              files: [file],
+              title: 'Recibo de Pago',
+              text: `Recibo - ${tenant.name} - $${payment.amount.toLocaleString('es-AR')}`
+            });
+
+            console.log('Compartido exitosamente');
+
+          } catch (shareError) {
+            if (shareError.name === 'AbortError') {
+              console.log('Usuario canceló');
+            } else {
+              logger.error('Error al compartir:', shareError);
+              const link = document.createElement('a');
+              link.download = filename;
             link.href = URL.createObjectURL(blob);
             link.click();
             URL.revokeObjectURL(link.href);
@@ -113,7 +116,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
       }, 'image/png', 1.0);
 
     } catch (error) {
-      console.error('Error general:', error);
+      logger.error('Error general:', error);
       toast.error('Error al generar el recibo.');
       setIsSharing(false);
     }
@@ -204,46 +207,48 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
 
       {/* Botones */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 print:hidden">
-        <button 
+        <Button 
           onClick={handleDownloadImage}
-          className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm flex items-center justify-center gap-2"
+          className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-600 dark:hover:bg-blue-700 shadow-none"
+          icon={<Download className="w-5 h-5" />}
         >
-          <Download className="w-5 h-5" />
           <span className="hidden sm:inline">Descargar</span>
-        </button>
+        </Button>
         
-        <button 
+        <Button 
           onClick={handleCopyImage}
-          className="px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold text-sm flex items-center justify-center gap-2"
+          className="bg-purple-600 hover:bg-purple-700 text-white dark:bg-purple-600 dark:hover:bg-purple-700 shadow-none"
+          icon={<Copy className="w-5 h-5" />}
         >
-          <Copy className="w-5 h-5" />
           <span className="hidden sm:inline">Copiar</span>
-        </button>
+        </Button>
         
-        <button 
+        <Button 
           onClick={handleShareWhatsApp}
           disabled={isSharing}
-          className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700 shadow-none"
+          icon={isSharing ? <Clock className="w-5 h-5 animate-spin" /> : <Share2 className="w-5 h-5" />}
         >
-          {isSharing ? <Clock className="w-5 h-5 animate-spin" /> : <Share2 className="w-5 h-5" />}
           <span className="hidden sm:inline">{isSharing ? 'Generando...' : 'Compartir'}</span>
-        </button>
+        </Button>
         
-        <button 
+        <Button 
           onClick={handlePrint}
-          className="px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold text-sm flex items-center justify-center gap-2"
+          className="bg-gray-600 hover:bg-gray-700 text-white dark:bg-gray-600 dark:hover:bg-gray-700 shadow-none"
+          icon={<Printer className="w-5 h-5" />}
         >
-          <Printer className="w-5 h-5" />
           <span className="hidden sm:inline">Imprimir</span>
-        </button>
+        </Button>
       </div>
 
-      <button 
+      <Button 
         onClick={onClose}
-        className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 dark:text-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 font-semibold print:hidden"
+        variant="outline"
+        className="w-full print:hidden"
+        icon={<ArrowLeft className="w-4 h-4" />}
       >
-        ← Volver
-      </button>
+        Volver
+      </Button>
     </div>
   );
 };

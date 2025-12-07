@@ -1,175 +1,157 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { expenseSchema } from '../../schemas/expenseSchema';
 import { EXPENSE_CATEGORIES } from '../../utils/constants';
 import { addTimeToDate } from '../../utils/dateUtils';
-import { validateAmount, validateRequired } from '../../utils/validations';
+import Input from '../common/Input';
+import Button from '../common/Button';
+import { Calendar, DollarSign, FileText, Home, Tag } from 'lucide-react';
 
 const ExpenseForm = ({ expense, propertyId, properties, onSave, onCancel }) => {
-  const [formData, setFormData] = useState(expense || {
-    description: '', 
-    category: 'Mantenimiento', 
-    amount: '', 
-    date: '', 
-    propertyId: propertyId || ''
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting }
+  } = useForm({
+    resolver: zodResolver(expenseSchema),
+    defaultValues: {
+      description: '',
+      category: 'Mantenimiento',
+      amount: '',
+      date: '',
+      propertyId: propertyId || ''
+    }
   });
 
-  const [errors, setErrors] = useState({});
+  useEffect(() => {
+    if (expense) {
+      reset({
+        description: expense.description || '',
+        category: expense.category || 'Mantenimiento',
+        amount: expense.amount || '',
+        date: expense.date ? expense.date.split('T')[0] : '',
+        propertyId: expense.propertyId || propertyId || ''
+      });
+    } else {
+      reset({
+        description: '',
+        category: 'Mantenimiento',
+        amount: '',
+        date: '',
+        propertyId: propertyId || ''
+      });
+    }
+  }, [expense, propertyId, reset]);
 
-  const validateForm = () => {
-    const newErrors = {};
-    
-    // Validar descripción
-    const descErrors = validateRequired(formData.description, 'Descripción');
-    if (descErrors.length > 0) {
-      newErrors.description = descErrors[0];
-    }
-    
-    // Validar propiedad (solo si no hay propertyId predefinido)
-    if (!propertyId) {
-      const propErrors = validateRequired(formData.propertyId, 'Propiedad');
-      if (propErrors.length > 0) {
-        newErrors.propertyId = propErrors[0];
-      }
-    }
-    
-    // Validar monto
-    const amountErrors = validateAmount(formData.amount, 'Monto');
-    if (amountErrors.length > 0) {
-      newErrors.amount = amountErrors[0];
-    }
-    
-    // Validar fecha
-    const dateErrors = validateRequired(formData.date, 'Fecha');
-    if (dateErrors.length > 0) {
-      newErrors.date = dateErrors[0];
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (validateForm()) {
-      const dateWithTime = addTimeToDate(formData.date);
-      onSave({...formData, date: dateWithTime, amount: parseInt(formData.amount)});
-    }
-  };
-
-  const handleChange = (field, value) => {
-    setFormData({...formData, [field]: value});
-    if (errors[field]) {
-      setErrors({...errors, [field]: null});
-    }
+  const onFormSubmit = async (data) => {
+    const dateWithTime = addTimeToDate(data.date);
+    await onSave({
+      ...data,
+      date: dateWithTime,
+      amount: Number(data.amount)
+    });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
       {/* Descripción */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Descripción *
-        </label>
-        <input 
-          type="text" 
-          value={formData.description} 
-          onChange={e => handleChange('description', e.target.value)} 
-          placeholder="Ej: Reparación de cañería"
-          className={`w-full border ${errors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white`}
-        />
-        {errors.description && (
-          <p className="text-red-500 text-xs mt-1">{errors.description}</p>
-        )}
-      </div>
+      {/* Descripción */}
+      <Input
+        label="Descripción"
+        {...register('description')}
+        error={errors.description?.message}
+        placeholder="Ej: Reparación de cañería"
+        icon={FileText}
+      />
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Selector de propiedad (solo si no hay propertyId predefinido) */}
         {!propertyId && properties && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Propiedad *
             </label>
-            <select 
-              value={formData.propertyId} 
-              onChange={e => handleChange('propertyId', e.target.value)} 
-              className={`w-full border ${errors.propertyId ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white`}
-            >
-              <option value="">Seleccionar propiedad...</option>
-              {properties.map(prop => (
-                <option key={prop.id} value={prop.id}>{prop.address}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <Home className="w-5 h-5" />
+              </div>
+              <select 
+                {...register('propertyId')}
+                className={`w-full pl-10 pr-4 py-2 h-12 bg-white dark:bg-gray-900 border ${errors.propertyId ? 'border-rose-500' : 'border-gray-200 dark:border-gray-700'} rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all appearance-none`}
+              >
+                <option value="">Seleccionar propiedad...</option>
+                {properties.map(prop => (
+                  <option key={prop.id} value={prop.id}>{prop.address}</option>
+                ))}
+              </select>
+            </div>
             {errors.propertyId && (
-              <p className="text-red-500 text-xs mt-1">{errors.propertyId}</p>
+              <p className="text-rose-500 text-xs mt-1">{errors.propertyId.message}</p>
             )}
           </div>
         )}
         
         {/* Categoría */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Categoría
           </label>
-          <select 
-            value={formData.category} 
-            onChange={e => handleChange('category', e.target.value)} 
-            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white"
-          >
-            {EXPENSE_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-          </select>
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <Tag className="w-5 h-5" />
+            </div>
+            <select 
+              {...register('category')}
+              className="w-full pl-10 pr-4 py-2 h-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all appearance-none"
+            >
+              {EXPENSE_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+            </select>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Monto */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Monto *
-          </label>
-          <input 
-            type="number" 
-            value={formData.amount} 
-            onChange={e => handleChange('amount', e.target.value)} 
-            placeholder="Ej: 15000"
-            min="1"
-            className={`w-full border ${errors.amount ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white`}
-          />
-          {errors.amount && (
-            <p className="text-red-500 text-xs mt-1">{errors.amount}</p>
-          )}
-        </div>
+        <Input
+          label="Monto"
+          type="number"
+          {...register('amount', { valueAsNumber: true })}
+          error={errors.amount?.message}
+          placeholder="Ej: 15000"
+          min="1"
+          icon={DollarSign}
+        />
 
         {/* Fecha */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Fecha *
-          </label>
-          <input 
-            type="date" 
-            value={formData.date} 
-            onChange={e => handleChange('date', e.target.value)} 
-            className={`w-full border ${errors.date ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white`}
-          />
-          {errors.date && (
-            <p className="text-red-500 text-xs mt-1">{errors.date}</p>
-          )}
-        </div>
+        <Input
+          label="Fecha"
+          type="date"
+          {...register('date')}
+          error={errors.date?.message}
+          icon={Calendar}
+        />
       </div>
       
       <div className="flex gap-3 justify-end pt-4">
-        <button 
+        <Button 
           type="button" 
-          onClick={onCancel} 
-          className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+          variant="outline"
+          onClick={() => {
+            reset();
+            onCancel();
+          }}
         >
           Cancelar
-        </button>
-        <button 
+        </Button>
+        <Button 
           type="submit" 
-          className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+          isLoading={isSubmitting}
+          variant="primary"
         >
           Guardar
-        </button>
+        </Button>
       </div>
     </form>
   );

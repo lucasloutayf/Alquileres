@@ -1,9 +1,28 @@
 import React from 'react';
-import StatCard from '../common/StatCard';
+import StatCard3D from '../common/StatCard3D';
 import { getTenantPaymentStatus } from '../../utils/paymentUtils';
-import { AlertTriangle, DollarSign } from 'lucide-react';
+import { AlertTriangle, DollarSign, ArrowLeft } from 'lucide-react';
+import { useTenants } from '../../hooks/useTenants';
+import { usePayments } from '../../hooks/usePayments';
+import Button from '../common/Button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../common/Table';
 
-const DebtorsView = ({ tenants, payments, onBack }) => {
+import { useNavigate } from 'react-router-dom';
+
+const DebtorsView = ({ user }) => {
+  const navigate = useNavigate();
+  const { tenants, loading: tenantsLoading } = useTenants(user?.uid);
+  const { payments, loading: paymentsLoading } = usePayments(user?.uid, { recent: true, days: 60 });
+
+  const loading = tenantsLoading || paymentsLoading;
+
   const debtors = tenants.filter(t => {
     if (t.contractStatus !== 'activo') return false;
     const status = getTenantPaymentStatus(t, payments);
@@ -13,88 +32,99 @@ const DebtorsView = ({ tenants, payments, onBack }) => {
 
   const totalDebt = debtors.reduce((sum, t) => sum + (t.rentAmount * t.paymentStatus.months), 0);
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <button 
-          onClick={onBack} 
-          className="flex items-center gap-2 px-4 py-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-lg transition-colors"
-        >
-          <span className="text-xl">←</span> Volver
-        </button>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Inquilinos con Deuda</h1>
-        <div></div>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => navigate('/')} 
+            className="rounded-full"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-display font-bold text-foreground">Inquilinos con Deuda</h1>
+            <p className="text-sm text-muted-foreground mt-1">Gestión y seguimiento de pagos pendientes</p>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <StatCard 
+        <StatCard3D 
           title="Total Deudores" 
           value={debtors.length} 
-          icon={<AlertTriangle className="w-6 h-6" />} 
-          colorClass="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800" 
+          icon={<AlertTriangle />} 
+          colorClass="red" 
         />
-        <StatCard 
+        <StatCard3D 
           title="Deuda Total Estimada" 
           value={`$${totalDebt.toLocaleString('es-AR')}`} 
-          icon={<DollarSign className="w-6 h-6" />}
-          colorClass="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900 dark:to-orange-800" 
+          icon={<DollarSign />}
+          colorClass="orange" 
         />
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Nombre
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Teléfono
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Habitación
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Meses Adeudados
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Deuda Estimada
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Último Pago
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {debtors.map(debtor => (
-                <tr key={debtor.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
-                  <td className="px-4 py-4 whitespace-nowrap text-gray-900 dark:text-white font-medium">
-                    {debtor.name}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-gray-700 dark:text-gray-300">
-                    {debtor.phone}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-gray-700 dark:text-gray-300">
-                    {debtor.roomNumber}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    <span className="px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-full text-xs font-medium">
-                      {debtor.paymentStatus.months} mes(es)
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-gray-900 dark:text-white font-semibold">
-                    ${(debtor.rentAmount * debtor.paymentStatus.months).toLocaleString('es-AR')}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-gray-700 dark:text-gray-300">
-                    {debtor.paymentStatus.lastPayment 
-                      ? new Date(debtor.paymentStatus.lastPayment).toLocaleDateString('es-AR') 
-                      : 'Nunca'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="space-y-4">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Listado de Deudores</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent border-b border-gray-200 dark:border-gray-700">
+                <TableHead className="text-gray-500 dark:text-gray-400">Nombre</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">Teléfono</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">Habitación</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">Meses Adeudados</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">Deuda Estimada</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">Último Pago</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {debtors.length === 0 ? (
+                <TableRow className="border-0">
+                  <TableCell colSpan={6} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    No hay inquilinos con deuda registrada.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                debtors.map((debtor, index) => (
+                  <TableRow key={debtor.id} transition={{ delay: index * 0.05 }} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700/50 last:border-0">
+                    <TableCell className="font-medium text-gray-900 dark:text-gray-100">
+                      {debtor.name}
+                    </TableCell>
+                    <TableCell className="text-gray-600 dark:text-gray-400">
+                      {debtor.phone}
+                    </TableCell>
+                    <TableCell className="text-gray-600 dark:text-gray-400">
+                      {debtor.roomNumber}
+                    </TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300">
+                        {debtor.paymentStatus.months} mes(es)
+                      </span>
+                    </TableCell>
+                    <TableCell className="font-semibold text-gray-900 dark:text-gray-100">
+                      ${(debtor.rentAmount * debtor.paymentStatus.months).toLocaleString('es-AR')}
+                    </TableCell>
+                    <TableCell className="text-gray-600 dark:text-gray-400">
+                      {debtor.paymentStatus.lastPayment 
+                        ? new Date(debtor.paymentStatus.lastPayment).toLocaleDateString('es-AR') 
+                        : 'Nunca'}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
     </div>

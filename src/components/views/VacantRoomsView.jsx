@@ -1,8 +1,18 @@
 import React from 'react';
 import StatCard from '../common/StatCard';
 import { Home, BarChart3 } from 'lucide-react';
+import { useProperties } from '../../hooks/useProperties';
+import { useTenants } from '../../hooks/useTenants';
 
-const VacantRoomsView = ({ properties, tenants, onBack }) => {
+import { useNavigate } from 'react-router-dom';
+
+const VacantRoomsView = ({ user }) => {
+  const navigate = useNavigate();
+  const { properties, loading: propertiesLoading } = useProperties(user?.uid);
+  const { tenants, loading: tenantsLoading } = useTenants(user?.uid);
+
+  const loading = propertiesLoading || tenantsLoading;
+
   const vacancyData = properties.map(prop => {
     const activeTenants = tenants.filter(t => t.propertyId === prop.id && t.contractStatus === 'activo');
     const vacant = prop.totalRooms - activeTenants.length;
@@ -17,11 +27,19 @@ const VacantRoomsView = ({ properties, tenants, onBack }) => {
   const totalVacant = vacancyData.reduce((sum, v) => sum + v.vacant, 0);
   const totalRooms = vacancyData.reduce((sum, v) => sum + v.total, 0);
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <button 
-          onClick={onBack} 
+          onClick={() => navigate('/')} 
           className="flex items-center gap-2 px-4 py-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-lg transition-colors"
         >
           <span className="text-xl">←</span> Volver

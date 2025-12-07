@@ -1,0 +1,79 @@
+
+> gestor-alquileres@0.0.0 lint
+> eslint .
+
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\common\Button.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                                                   no-unused-vars
+  7:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\common\Card.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                                                   no-unused-vars
+  6:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\common\Input.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\common\IsometricBuilding.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\common\ScrollReveal.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\common\StatCard3D.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\common\Table.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\forms\PaymentsModal.jsx
+  11:40  error  'onClose' is defined but never used                                                              no-unused-vars
+  14:14  error  'paymentsLoading' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\layout\Header.jsx
+  19:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\layout\Layout.jsx
+  4:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\properties\PropertyCard.jsx
+  7:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\receipts\ReceiptGenerator.jsx
+   57:18  error  'err' is defined but never used    no-unused-vars
+   62:14  error  'error' is defined but never used  no-unused-vars
+  105:29  error  'filename' is not defined          no-undef
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\views\CalendarView.jsx
+  3:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\views\Dashboard.jsx
+    4:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  373:38  error  'index' is defined but never used                                              no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\views\ExpensesView.jsx
+  24:9  error  'loading' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\components\views\PropertyDetail.jsx
+   47:15  error    'recentPayments' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                     no-unused-vars
+   66:9   error    'loading' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                            no-unused-vars
+  117:11  error    Unexpected lexical declaration in case block                                                                       no-case-declarations
+  118:11  error    Unexpected lexical declaration in case block                                                                       no-case-declarations
+  140:6   warning  React Hook useMemo has a missing dependency: 'getSortedTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\firebase\firestore.js
+  15:3  error  'getCountFromServer' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\hooks\useExpenses.js
+  5:3  error  'getMonthlyExpenses' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\hooks\usePayments.js
+  5:3  error  'getRecentPayments' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\capi1\OneDrive\Escritorio\Coderhouse\Proyectos\GestorAlquiler\gestor-alquileres\src\utils\pdfGenerator.js
+   34:9  error  'safePayments' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u    no-unused-vars
+  336:9  error  'safeProperties' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  337:9  error  'safeTenants' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u     no-unused-vars
+
+Ô£û 32 problems (31 errors, 1 warning)
+

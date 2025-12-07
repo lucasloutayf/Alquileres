@@ -1,10 +1,24 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Minus, FileText, Trash2 } from 'lucide-react';
+import { Plus, Minus, FileText, Trash2, Calendar, DollarSign, AlertCircle, CreditCard } from 'lucide-react';
 import { getTodayFormatted, addTimeToDate } from '../../utils/dateUtils';
 import ReceiptGenerator from '../receipts/ReceiptGenerator';
+import ConfirmModal from '../common/ConfirmModal';
 import toast from 'react-hot-toast';
+import Input from '../common/Input';
+import Button from '../common/Button';
+import { usePayments } from '../../hooks/usePayments';
+import { logger } from '../../utils/logger';
 
-const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePayment }) => {
+const PaymentsModal = ({ user, tenant }) => {
+  const { 
+    payments, 
+    addPayment, 
+    deletePayment,
+    loadMore,
+    hasMore,
+    loadingMore
+  } = usePayments(user?.uid, { paginated: true, tenantId: tenant.id, pageSize: 10 });
+
   const [amount, setAmount] = useState(tenant.rentAmount);
   const [date, setDate] = useState(getTodayFormatted());
   const [adjustment, setAdjustment] = useState(0);
@@ -13,7 +27,9 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
   const [adjustmentType, setAdjustmentType] = useState('none');
   const [showReceipt, setShowReceipt] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
-  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [paymentToDelete, setPaymentToDelete] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const finalAmount = useMemo(() => {
     const base = parseInt(amount) || 0;
@@ -23,7 +39,7 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
     return base;
   }, [amount, adjustment, adjustmentType]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!amount || parseInt(amount) <= 0) {
@@ -42,28 +58,47 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
       }
     }
     
-    const dateWithTime = addTimeToDate(date);
-    const dueDateWithTime = addTimeToDate(dueDate);
-    
-    const paymentData = {
-      tenantId: tenant.id,
-      baseAmount: parseInt(amount),
-      adjustment: adjustmentType !== 'none' ? parseInt(adjustment) : 0,
-      adjustmentType: adjustmentType !== 'none' ? adjustmentType : null,
-      adjustmentReason: adjustmentType !== 'none' ? adjustmentReason : null,
-      amount: finalAmount,
-      date: dateWithTime,
-      dueDate: dueDateWithTime,
-    };
+    try {
+      setIsSubmitting(true);
+      const dateWithTime = addTimeToDate(date);
+      const dueDateWithTime = addTimeToDate(dueDate);
+      
+      const paymentData = {
+        tenantId: tenant.id,
+        baseAmount: parseInt(amount),
+        adjustment: adjustmentType !== 'none' ? parseInt(adjustment) : 0,
+        adjustmentType: adjustmentType !== 'none' ? adjustmentType : null,
+        adjustmentReason: adjustmentType !== 'none' ? adjustmentReason : null,
+        amount: finalAmount,
+        date: dateWithTime,
+        dueDate: dueDateWithTime,
+      };
 
-    onAddPayment(paymentData);
-    
-    setAmount(tenant.rentAmount);
-    setDate(getTodayFormatted());
-    setAdjustment(0);
-    setAdjustmentReason('');
-    setAdjustmentType('none');
-    setDueDate(getTodayFormatted());
+      await addPayment(paymentData);
+      
+      setAmount(tenant.rentAmount);
+      setDate(getTodayFormatted());
+      setAdjustment(0);
+      setAdjustmentReason('');
+      setAdjustmentType('none');
+      setDueDate(getTodayFormatted());
+    } catch (error) {
+      logger.error('Error adding payment:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeletePayment = async () => {
+    try {
+      setIsDeleting(true);
+      await deletePayment(paymentToDelete.id);
+      setPaymentToDelete(null);
+    } catch (error) {
+      logger.error('Error deleting payment:', error);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleGenerateReceipt = (payment) => {
@@ -72,7 +107,6 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
   };
 
   const tenantPayments = payments
-    .filter(p => p.tenantId === tenant.id)
     .sort((a,b) => new Date(b.date) - new Date(a.date));
 
   if (showReceipt && selectedPayment) {
@@ -89,94 +123,86 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
   }
 
   return (
-    <div>
-      <form onSubmit={handleSubmit} className="mb-6 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-        <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">Registrar Nuevo Pago</h3>
+    <div className="space-y-8">
+      <form onSubmit={handleSubmit} className="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-2 mb-6">
+          <CreditCard className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Registrar Nuevo Pago</h3>
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Monto Base
-            </label>
-            <input 
-              type="number" 
-              required 
-              value={amount} 
-              onChange={e => setAmount(e.target.value)} 
-              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white" 
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Fecha de Pago
-            </label>
-            <input 
-              type="date" 
-              required 
-              value={date} 
-              onChange={e => setDate(e.target.value)} 
-              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white" 
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Fecha de Vencimiento
-            </label>
-            <input
-              type="date"
-              required
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white"
-            />
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <Input
+            label="Monto Base"
+            type="number"
+            required
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+            icon={DollarSign}
+          />
+          <Input
+            label="Fecha de Pago"
+            type="date"
+            required
+            value={date}
+            onChange={e => setDate(e.target.value)}
+            icon={Calendar}
+          />
+          <Input
+            label="Fecha de Vencimiento"
+            type="date"
+            required
+            value={dueDate}
+            onChange={e => setDueDate(e.target.value)}
+            icon={Calendar}
+          />
         </div>
 
         {/* Multas/Descuentos */}
-        <div className="border-t border-gray-300 dark:border-gray-600 pt-3 mt-3">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
+          <label className="block text-sm font-medium text-gray-900 dark:text-white mb-4">
             Ajustes (Opcional)
           </label>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div>
-              <select 
-                value={adjustmentType} 
-                onChange={e => {
-                  setAdjustmentType(e.target.value);
-                  if (e.target.value === 'none') {
-                    setAdjustment(0);
-                    setAdjustmentReason('');
-                  }
-                }}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white"
-              >
-                <option value="none">Sin ajuste</option>
-                <option value="surcharge">Multa/Cargo</option>
-                <option value="discount">Descuento</option>
-              </select>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <AlertCircle className="w-5 h-5" />
+                </div>
+                <select 
+                  value={adjustmentType} 
+                  onChange={e => {
+                    setAdjustmentType(e.target.value);
+                    if (e.target.value === 'none') {
+                      setAdjustment(0);
+                      setAdjustmentReason('');
+                    }
+                  }}
+                  className="w-full pl-10 pr-4 py-2 h-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all appearance-none"
+                >
+                  <option value="none">Sin ajuste</option>
+                  <option value="surcharge">Multa/Cargo</option>
+                  <option value="discount">Descuento</option>
+                </select>
+              </div>
             </div>
 
             {adjustmentType !== 'none' && (
               <>
-                <div>
-                  <input 
-                    type="number" 
-                    placeholder="Monto" 
-                    value={adjustment} 
-                    onChange={e => setAdjustment(e.target.value)} 
-                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white" 
-                  />
-                </div>
-                <div>
-                  <input 
-                    type="text" 
-                    placeholder="Motivo" 
-                    value={adjustmentReason} 
-                    onChange={e => setAdjustmentReason(e.target.value)} 
-                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white" 
-                  />
-                </div>
+                <Input
+                  placeholder="Monto"
+                  type="number"
+                  value={adjustment}
+                  onChange={e => setAdjustment(e.target.value)}
+                  icon={DollarSign}
+                />
+                <Input
+                  placeholder="Motivo"
+                  type="text"
+                  value={adjustmentReason}
+                  onChange={e => setAdjustmentReason(e.target.value)}
+                  icon={FileText}
+                />
               </>
             )}
           </div>
@@ -184,15 +210,15 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
 
         {/* Resumen del pago */}
         {adjustmentType !== 'none' && (
-          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900 rounded-lg">
-            <div className="flex justify-between items-center text-sm mb-1">
-              <span className="text-gray-700 dark:text-gray-300">Monto base:</span>
+          <div className="mt-6 p-4 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-lg border border-emerald-100 dark:border-emerald-900/20">
+            <div className="flex justify-between items-center text-sm mb-2">
+              <span className="text-gray-500 dark:text-gray-400">Monto base:</span>
               <span className="font-medium text-gray-900 dark:text-white">
                 ${parseInt(amount || 0).toLocaleString('es-AR')}
               </span>
             </div>
-            <div className="flex justify-between items-center text-sm mb-1">
-              <span className={adjustmentType === 'surcharge' ? 'text-red-600 dark:text-red-400 flex items-center gap-1' : 'text-green-600 dark:text-green-400 flex items-center gap-1'}>
+            <div className="flex justify-between items-center text-sm mb-2">
+              <span className={adjustmentType === 'surcharge' ? 'text-rose-500 flex items-center gap-1' : 'text-emerald-600 dark:text-emerald-400 flex items-center gap-1'}>
                 {adjustmentType === 'surcharge' ? (
                   <>
                     <Plus className="w-4 h-4" />
@@ -205,49 +231,51 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
                   </>
                 )}
               </span>
-              <span className={adjustmentType === 'surcharge' ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}>
+              <span className={adjustmentType === 'surcharge' ? 'text-rose-500 font-medium' : 'text-emerald-600 dark:text-emerald-400 font-medium'}>
                 {adjustmentType === 'surcharge' ? '+' : '-'}${parseInt(adjustment || 0).toLocaleString('es-AR')}
               </span>
             </div>
-            <div className="flex justify-between items-center text-base font-bold border-t border-blue-200 dark:border-blue-700 pt-2 mt-2">
+            <div className="flex justify-between items-center text-base font-bold border-t border-emerald-100 dark:border-emerald-900/20 pt-3 mt-2">
               <span className="text-gray-900 dark:text-white">Total a pagar:</span>
-              <span className="text-blue-600 dark:text-blue-400 text-xl">
+              <span className="text-emerald-600 dark:text-emerald-400 text-xl">
                 ${finalAmount.toLocaleString('es-AR')}
               </span>
             </div>
           </div>
         )}
 
-        <div className="mt-3">
-          <button 
+        <div className="mt-6">
+          <Button 
             type="submit" 
-            className="w-full px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold"
+            isLoading={isSubmitting}
+            className="w-full"
+            variant="default"
           >
             Registrar Pago
-          </button>
+          </Button>
         </div>
       </form>
 
       <div>
-        <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">Historial de Pagos</h3>
+        <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-4">Historial de Pagos</h3>
         {tenantPayments.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+          <p className="text-gray-500 dark:text-gray-400 text-center py-8 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
             No hay pagos registrados
           </p>
         ) : (
-          <div className="space-y-2 max-h-96 overflow-y-auto">
+          <div className="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
             {tenantPayments.map(payment => (
-              <div key={payment.id} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+              <div key={payment.id} className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">
+                  <div className="flex items-center gap-3">
+                    <span className="text-gray-900 dark:text-white font-medium">
                       {new Date(payment.date).toLocaleDateString('es-AR')}
                     </span>
                     {payment.adjustmentType && (
-                      <span className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${
+                      <span className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 font-medium ${
                         payment.adjustmentType === 'surcharge' 
-                          ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200' 
-                          : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200'
+                          ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400' 
+                          : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
                       }`}>
                         {payment.adjustmentType === 'surcharge' ? (
                           <>
@@ -263,70 +291,67 @@ const PaymentsModal = ({ tenant, payments, onClose, onAddPayment, onDeletePaymen
                       </span>
                     )}
                   </div>
-                  <div className="mt-1">
-                    <span className="font-semibold text-green-600 dark:text-green-400 text-lg">
+                  <div className="mt-1 flex items-baseline gap-2">
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400 text-lg">
                       ${payment.amount.toLocaleString('es-AR')}
                     </span>
                     {payment.adjustmentType && (
-                      <span className="text-xs text-gray-600 dark:text-gray-400 ml-2">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
                         (Base: ${payment.baseAmount.toLocaleString('es-AR')} {payment.adjustmentType === 'surcharge' ? '+' : '-'}${payment.adjustment.toLocaleString('es-AR')})
                       </span>
                     )}
                   </div>
                   {payment.adjustmentReason && (
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                      {payment.adjustmentReason}
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 italic">
+                      "{payment.adjustmentReason}"
                     </p>
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <button 
+                  <Button 
                     onClick={() => handleGenerateReceipt(payment)}
-                    className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                    variant="secondary"
+                    size="sm"
+                    icon={<FileText className="w-4 h-4" />}
                   >
-                    <FileText className="w-4 h-4" />
-                    <span>Recibo</span>
-                  </button>
-                  <button 
-                    onClick={() => setConfirmDelete(payment.id)}
-                    className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
+                    Recibo
+                  </Button>
+                  <Button 
+                    onClick={() => setPaymentToDelete(payment)}
+                    variant="ghost"
+                    size="icon"
+                    className="text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20"
                   >
                     <Trash2 className="w-4 h-4" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}
           </div>
         )}
+
+        
+        {hasMore && (
+          <div className="flex justify-center mt-6">
+            <Button 
+              variant="secondary" 
+              onClick={loadMore}
+              disabled={loadingMore}
+            >
+              {loadingMore ? 'Cargando...' : 'Cargar más pagos'}
+            </Button>
+          </div>
+        )}
       </div>
 
-      {/* Modal de confirmación para borrar */}
-      {confirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm">
-            <p className="text-gray-900 dark:text-white mb-4">
-              ¿Estás seguro de eliminar este pago?
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button 
-                onClick={() => setConfirmDelete(null)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
-              >
-                Cancelar
-              </button>
-              <button 
-                onClick={() => {
-                  onDeletePayment(confirmDelete);
-                  setConfirmDelete(null);
-                }}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={!!paymentToDelete}
+        onClose={() => setPaymentToDelete(null)}
+        onConfirm={handleDeletePayment}
+        title="Eliminar Pago"
+        message="¿Estás seguro de eliminar este pago? Esta acción no se puede deshacer."
+        isLoading={isDeleting}
+      />
     </div>
   );
 };

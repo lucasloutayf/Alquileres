@@ -4,15 +4,31 @@ import Modal from '../common/Modal';
 import Button from '../common/Button';
 import ExpenseForm from '../forms/ExpenseForm';
 import BarChart from '../common/BarChart';
+import { useExpenses } from '../../hooks/useExpenses';
+import { useProperties } from '../../hooks/useProperties';
+import ConfirmModal from '../common/ConfirmModal';
+import { logger } from '../../utils/logger';
 
-const ExpensesView = ({
-  expenses,
-  properties,
-  onBack,
-  onAddExpense,
-  onDeleteExpense,
-}) => {
+import { useNavigate } from 'react-router-dom';
+
+const ExpensesView = ({ user, theme }) => {
+  const navigate = useNavigate();
+  const { 
+    expenses, 
+    addExpense, 
+    deleteExpense,
+    loadMore,
+    hasMore,
+    loadingMore
+  } = useExpenses(user?.uid, { paginated: true, pageSize: 20 });
+
+  const { properties } = useProperties(user?.uid);
+
+
+
   const [expenseModalOpen, setExpenseModalOpen] = useState(false);
+  const [expenseToDelete, setExpenseToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
 
@@ -33,17 +49,29 @@ const ExpensesView = ({
     })).sort((a, b) => b.value - a.value);
   }, [expenses, properties]);
 
-  const handleSaveExpense = (expenseData) => {
-    onAddExpense(expenseData);
+  const handleSaveExpense = async (expenseData) => {
+    await addExpense(expenseData);
     setExpenseModalOpen(false);
   };
 
+  const handleDeleteExpense = async () => {
+    try {
+      setIsDeleting(true);
+      await deleteExpense(expenseToDelete.id);
+      setExpenseToDelete(null);
+    } catch (error) {
+      logger.error('Error deleting expense:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-4">
+    <div className="space-y-6">
       {/* Header y botón */}
-      <div className="flex items-center justify-between px-8 pt-2 pb-4">
+      <div className="flex items-center justify-between">
         <button
-          onClick={onBack}
+          onClick={() => navigate('/')}
           className="text-emerald-600 dark:text-emerald-400 hover:underline text-base font-medium"
         >← Volver</button>
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Gastos</h1>
@@ -58,36 +86,36 @@ const ExpensesView = ({
       </div>
 
       {/* StatCard principal */}
-      <div className="px-8 pt-1 pb-4">
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-8 flex items-center gap-4 border border-gray-100 dark:border-gray-800">
-          <div className="bg-rose-100 dark:bg-rose-950 p-3 rounded-lg flex items-center justify-center">
-            <Receipt className="w-7 h-7 text-rose-700 dark:text-rose-300" />
+      <div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 flex items-center gap-4 border border-gray-200 dark:border-gray-700">
+          <div className="bg-rose-100 dark:bg-rose-900/30 p-3 rounded-lg flex items-center justify-center">
+            <Receipt className="w-7 h-7 text-rose-600 dark:text-rose-400" />
           </div>
           <div>
             <div className="text-sm text-gray-500 dark:text-gray-400 mb-1 font-medium">GASTOS TOTALES</div>
-            <div className="text-3xl font-bold text-gray-900 dark:text-white">${totalExpenses.toLocaleString('es-AR')}</div>
+            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">${totalExpenses.toLocaleString('es-AR')}</div>
           </div>
         </div>
       </div>
 
       {/* Gráficos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-8 pt-2">
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-6 border border-gray-100 dark:border-gray-800 min-h-[220px]">
-          <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Gastos por Categoría</h2>
-          <BarChart data={byCategory} title="" barColor="emerald" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 border border-gray-200 dark:border-gray-700 min-h-[220px]">
+          <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Gastos por Categoría</h2>
+          <BarChart data={byCategory} title="" barColor="emerald" theme={theme} />
         </div>
-        <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-6 border border-gray-100 dark:border-gray-800 min-h-[220px]">
-          <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Gastos por Propiedad</h2>
-          <BarChart data={byProperty} title="" barColor="emerald" />
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 border border-gray-200 dark:border-gray-700 min-h-[220px]">
+          <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Gastos por Propiedad</h2>
+          <BarChart data={byProperty} title="" barColor="emerald" theme={theme} />
         </div>
       </div>
 
       {/* Tabla detalle de gastos */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow px-8 py-6 mt-8 mx-8 border border-gray-100 dark:border-gray-800">
-        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Detalle de Gastos</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow px-8 py-6 border border-gray-200 dark:border-gray-700">
+        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Detalle de Gastos</h2>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-800">
+            <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
               <tr>
                 <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">DESCRIPCIÓN</th>
                 <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">PROPIEDAD</th>
@@ -97,19 +125,19 @@ const ExpensesView = ({
                 <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">ACCIONES</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {expenses.sort((a, b) => new Date(b.date) - new Date(a.date)).map(expense => {
                 const property = properties.find(p => p.id === expense.propertyId);
                 return (
-                  <tr key={expense.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                    <td className="px-4 py-3 text-gray-800 dark:text-gray-100">{expense.description}</td>
-                    <td className="px-4 py-3 text-gray-800 dark:text-gray-100">{property?.address || '-'}</td>
-                    <td className="px-4 py-3 text-gray-800 dark:text-gray-100">{expense.category}</td>
-                    <td className="px-4 py-3 font-semibold text-gray-900 dark:text-white">${expense.amount.toLocaleString('es-AR')}</td>
-                    <td className="px-4 py-3 text-gray-800 dark:text-gray-100">{new Date(expense.date).toLocaleDateString('es-AR')}</td>
+                  <tr key={expense.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                    <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{expense.description}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{property?.address || '-'}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{expense.category}</td>
+                    <td className="px-4 py-3 font-semibold text-gray-900 dark:text-gray-100">${expense.amount.toLocaleString('es-AR')}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{new Date(expense.date).toLocaleDateString('es-AR')}</td>
                     <td className="px-4 py-3">
                       <button
-                        onClick={() => onDeleteExpense(expense.id)}
+                        onClick={() => setExpenseToDelete(expense)}
                         className="p-2 rounded-lg text-rose-600 hover:text-white hover:bg-rose-600 transition-colors"
                         aria-label="Eliminar"
                       >
@@ -137,6 +165,27 @@ const ExpensesView = ({
           onCancel={() => setExpenseModalOpen(false)}
         />
       </Modal>
+
+      {hasMore && (
+        <div className="flex justify-center mb-8">
+          <Button 
+            variant="secondary" 
+            onClick={loadMore}
+            disabled={loadingMore}
+          >
+            {loadingMore ? 'Cargando...' : 'Cargar más gastos'}
+          </Button>
+        </div>
+      )}
+
+      <ConfirmModal
+        isOpen={!!expenseToDelete}
+        onClose={() => setExpenseToDelete(null)}
+        onConfirm={handleDeleteExpense}
+        title="Eliminar Gasto"
+        message="¿Estás seguro de eliminar este gasto? Esta acción no se puede deshacer."
+        isLoading={isDeleting}
+      />
     </div>
   );
 };

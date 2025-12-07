@@ -31,9 +31,9 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
       />
       
       {/* Modal */}
-      <div className={`relative bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full ${sizeClasses[size]} border border-gray-200 dark:border-gray-800 overflow-hidden`}>
+      <div className={`relative bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full ${sizeClasses[size]} border border-gray-200 dark:border-gray-700 overflow-hidden`}>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             {title}
           </h2>

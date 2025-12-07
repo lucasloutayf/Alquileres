@@ -2,17 +2,17 @@ import React from 'react';
 import Button from './Button';
 import { AlertTriangle } from 'lucide-react';
 
-const ConfirmModal = ({ isOpen, onClose, onConfirm, title = 'Confirmar acción', message }) => {
+const ConfirmModal = ({ isOpen, onClose, onConfirm, title = 'Confirmar acción', message, isLoading = false }) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div 
         className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={!isLoading ? onClose : undefined}
       />
       
-      <div className="relative bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-md border border-gray-200 dark:border-gray-800">
+      <div className="relative bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-md border border-gray-200 dark:border-gray-700">
         <div className="p-6">
           <div className="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mb-4">
             <AlertTriangle className="w-6 h-6 text-rose-600 dark:text-rose-400" />
@@ -31,15 +31,17 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title = 'Confirmar acción',
               onClick={onClose}
               variant="secondary"
               className="flex-1"
+              disabled={isLoading}
             >
               Cancelar
             </Button>
             <Button
               onClick={onConfirm}
-              variant="danger"
+              variant="destructive"
               className="flex-1"
+              disabled={isLoading}
             >
-              Eliminar
+              {isLoading ? 'Eliminando...' : 'Eliminar'}
             </Button>
           </div>
         </div>
