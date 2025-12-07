@@ -2,6 +2,10 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
+    // ==========================================
+    // FUNCIONES DE AUTENTICACIÓN
+    // ==========================================
+    
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -10,21 +14,51 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
     
-    // Validación de Schema para Propiedades
-    function isValidProperty() {
+    // Verifica si el documento existente pertenece al usuario autenticado
+    function isDocumentOwner() {
+      return isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Verifica si los datos nuevos pertenecen al usuario autenticado
+    function isNewDataOwner() {
+      return isAuthenticated() && request.resource.data.userId == request.auth.uid;
+    }
+    
+    // ==========================================
+    // VALIDACIONES DE PROPIEDADES
+    // ==========================================
+    
+    function isValidPropertyCreate() {
       let data = request.resource.data;
-      return data.keys().hasAll(['address', 'userId', 'createdAt']) &&
+      return data.keys().hasAll(['title', 'propertyType', 'address', 'totalRooms', 'userId', 'createdAt']) &&
              data.userId == request.auth.uid &&
+             data.title is string &&
+             data.title.size() > 0 &&
+             data.title.size() < 100 &&
+             data.propertyType is string &&
+             data.propertyType.size() > 0 &&
+             data.address is string &&
+             data.address.size() > 0 &&
+             data.address.size() < 200 &&
+             data.totalRooms is number &&
+             data.totalRooms >= 1;
+    }
+    
+    function isValidPropertyUpdate() {
+      let data = request.resource.data;
+      return data.userId == request.auth.uid &&
              data.address is string &&
              data.address.size() > 0 &&
              data.address.size() < 200;
     }
 
-    // Validación de Schema para Inquilinos
-    function isValidTenant() {
+    // ==========================================
+    // VALIDACIONES DE INQUILINOS
+    // ==========================================
+    
+    function isValidTenantCreate() {
       let data = request.resource.data;
-      return data.keys().hasAll(['name', 'dni', 'phone', 'propertyId', 'userId', 'rentAmount', 'entryDate', 'contractStatus']) &&
-             data.userId == request.auth.uid &&
+      return data.userId == request.auth.uid &&
              data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
              data.dni is string && data.dni.size() >= 7 && data.dni.size() <= 10 &&
              data.phone is string && data.phone.size() > 0 &&
@@ -33,52 +67,91 @@ service cloud.firestore {
              data.entryDate is string &&
              data.contractStatus in ['activo', 'finalizado'];
     }
-
-    // Validación de Schema para Pagos
-    function isValidPayment() {
+    
+    // Validación más flexible para updates (permite campos adicionales)
+    function isValidTenantUpdate() {
       let data = request.resource.data;
-      return data.keys().hasAll(['tenantId', 'amount', 'date', 'userId']) &&
-             data.userId == request.auth.uid &&
+      return data.userId == request.auth.uid &&
+             data.name is string && data.name.size() > 0 &&
+             data.propertyId is string && data.propertyId.size() > 0;
+    }
+
+    // ==========================================
+    // VALIDACIONES DE PAGOS
+    // ==========================================
+    
+    function isValidPaymentCreate() {
+      let data = request.resource.data;
+      return data.userId == request.auth.uid &&
              data.tenantId is string && data.tenantId.size() > 0 &&
              data.amount is number && data.amount > 0 &&
              data.date is string;
     }
-
-    // Validación de Schema para Gastos
-    function isValidExpense() {
+    
+    function isValidPaymentUpdate() {
       let data = request.resource.data;
-      return data.keys().hasAll(['propertyId', 'amount', 'date', 'userId', 'description', 'category']) &&
-             data.userId == request.auth.uid &&
+      return data.userId == request.auth.uid &&
+             data.amount is number && data.amount > 0;
+    }
+
+    // ==========================================
+    // VALIDACIONES DE GASTOS
+    // ==========================================
+    
+    function isValidExpenseCreate() {
+      let data = request.resource.data;
+      return data.userId == request.auth.uid &&
              data.propertyId is string && data.propertyId.size() > 0 &&
              data.amount is number && data.amount > 0 &&
              data.date is string &&
              data.description is string && data.description.size() > 0 && data.description.size() < 500 &&
              data.category is string;
     }
+    
+    function isValidExpenseUpdate() {
+      let data = request.resource.data;
+      return data.userId == request.auth.uid &&
+             data.amount is number && data.amount > 0;
+    }
 
+    // ==========================================
+    // REGLAS DE PROPIEDADES
+    // ==========================================
     match /properties/{propertyId} {
-      allow read: if isOwner(resource.data.userId);
-      allow create: if isOwner(request.resource.data.userId) && isValidProperty();
-      allow update: if isOwner(resource.data.userId) && isValidProperty();
-      allow delete: if isOwner(resource.data.userId);
+      allow read: if isDocumentOwner();
+      allow create: if isNewDataOwner() && isValidPropertyCreate();
+      allow update: if isDocumentOwner() && isValidPropertyUpdate();
+      allow delete: if isDocumentOwner();
     }
     
+    // ==========================================
+    // REGLAS DE INQUILINOS
+    // ==========================================
     match /tenants/{tenantId} {
-      allow read, delete: if isOwner(resource.data.userId);
-      allow create: if isOwner(request.resource.data.userId) && isValidTenant();
-      allow update: if isOwner(resource.data.userId) && isValidTenant();
+      allow read: if isDocumentOwner();
+      allow create: if isNewDataOwner() && isValidTenantCreate();
+      allow update: if isDocumentOwner() && isValidTenantUpdate();
+      allow delete: if isDocumentOwner();
     }
     
+    // ==========================================
+    // REGLAS DE PAGOS
+    // ==========================================
     match /payments/{paymentId} {
-      allow read, delete: if isOwner(resource.data.userId);
-      allow create: if isOwner(request.resource.data.userId) && isValidPayment();
-      allow update: if isOwner(resource.data.userId) && isValidPayment();
+      allow read: if isDocumentOwner();
+      allow create: if isNewDataOwner() && isValidPaymentCreate();
+      allow update: if isDocumentOwner() && isValidPaymentUpdate();
+      allow delete: if isDocumentOwner();
     }
     
+    // ==========================================
+    // REGLAS DE GASTOS
+    // ==========================================
     match /expenses/{expenseId} {
-      allow read, delete: if isOwner(resource.data.userId);
-      allow create: if isOwner(request.resource.data.userId) && isValidExpense();
-      allow update: if isOwner(resource.data.userId) && isValidExpense();
+      allow read: if isDocumentOwner();
+      allow create: if isNewDataOwner() && isValidExpenseCreate();
+      allow update: if isDocumentOwner() && isValidExpenseUpdate();
+      allow delete: if isDocumentOwner();
     }
   }
 }

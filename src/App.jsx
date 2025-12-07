@@ -1,9 +1,10 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Auth from './components/Auth';
 import Layout from './components/layout/Layout';
+import ResetPassword from './components/auth/ResetPassword';
 
 // Lazy loading de vistas para code splitting
 const Dashboard = lazy(() => import('./components/views/Dashboard'));
@@ -24,6 +25,38 @@ const PageLoader = () => (
   </div>
 );
 
+// Componente que maneja las acciones de Firebase (reset password, verify email)
+const AuthActionHandler = () => {
+  const [searchParams] = useSearchParams();
+  const mode = searchParams.get('mode');
+  
+  // Si es resetPassword, mostrar la página de cambio de contraseña
+  if (mode === 'resetPassword') {
+    return <ResetPassword />;
+  }
+  
+  // Para otros modos (verifyEmail, etc), redirigir al login
+  return <Navigate to="/" replace />;
+};
+
+// Componente interno que maneja las rutas autenticadas
+const ProtectedRoutes = ({ user, theme }) => {
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/" element={<Dashboard user={user} theme={theme} />} />
+        <Route path="/property/:id" element={<PropertyDetail user={user} />} />
+        <Route path="/debtors" element={<DebtorsView user={user} />} />
+        <Route path="/vacant" element={<VacantRoomsView user={user} />} />
+        <Route path="/calendar" element={<CalendarView user={user} />} />
+        <Route path="/income" element={<MonthlyIncomeView user={user} theme={theme} />} />
+        <Route path="/expenses" element={<ExpensesView user={user} theme={theme} />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
+  );
+};
+
 // Componente interno que usa el contexto de autenticación
 const AppContent = () => {
   const { user, loading } = useAuth();
@@ -41,80 +74,53 @@ const AppContent = () => {
     return <PageLoader />;
   }
 
-  // Pantalla de login/registro
-  if (!user) {
-    return <Auth />;
-  }
-
-  // App principal
   return (
-    <BrowserRouter>
-      <Layout user={user} theme={theme} toggleTheme={toggleTheme}>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={
-              <Dashboard user={user} theme={theme} />
-            } />
-            
-            <Route path="/property/:id" element={
-              <PropertyDetail user={user} />
-            } />
-            
-            <Route path="/debtors" element={
-              <DebtorsView user={user} />
-            } />
-            
-            <Route path="/vacant" element={
-              <VacantRoomsView user={user} />
-            } />
-            
-            <Route path="/calendar" element={
-              <CalendarView user={user} />
-            } />
-            
-            <Route path="/income" element={
-              <MonthlyIncomeView user={user} theme={theme} />
-            } />
-            
-            <Route path="/expenses" element={
-              <ExpensesView user={user} theme={theme} />
-            } />
-
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      </Layout>
-    </BrowserRouter>
+    <Routes>
+      {/* Ruta para acciones de Firebase Auth (reset password, verify email) */}
+      <Route path="/auth/action" element={<AuthActionHandler />} />
+      
+      {/* Rutas públicas y protegidas */}
+      <Route path="/*" element={
+        user ? (
+          <Layout user={user} theme={theme} toggleTheme={toggleTheme}>
+            <ProtectedRoutes user={user} theme={theme} />
+          </Layout>
+        ) : (
+          <Auth />
+        )
+      } />
+    </Routes>
   );
 };
 
 const App = () => {
   return (
-    <AuthProvider>
-      <Toaster 
-        position="top-right"
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: '#363636',
-            color: '#fff',
-          },
-          success: {
-            duration: 3000,
-          },
-          error: {
-            duration: 5000,
+    <BrowserRouter>
+      <AuthProvider>
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
             style: {
-              background: '#ef4444',
+              background: '#363636',
               color: '#fff',
             },
-          },
-        }}
-      />
-      <AppContent />
-    </AuthProvider>
+            success: {
+              duration: 3000,
+            },
+            error: {
+              duration: 5000,
+              style: {
+                background: '#ef4444',
+                color: '#fff',
+              },
+            },
+          }}
+        />
+        <AppContent />
+      </AuthProvider>
+    </BrowserRouter>
   );
 };
 
 export default App;
-

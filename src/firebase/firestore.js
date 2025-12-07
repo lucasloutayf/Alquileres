@@ -88,16 +88,36 @@ export const deletePropertyAtomic = async (propertyId) => {
     const batch = writeBatch(db);
     batch.delete(propertyRef);
 
-    // 2. Buscar y borrar inquilinos asociados
-    const tenantsQ = query(collection(db, 'tenants'), where('propertyId', '==', propertyId));
+    // 2. Buscar y borrar inquilinos asociados (filtrar por userId para cumplir reglas)
+    const tenantsQ = query(
+      collection(db, 'tenants'), 
+      where('propertyId', '==', propertyId),
+      where('userId', '==', userId)
+    );
     const tenantsSnapshot = await getDocs(tenantsQ);
     
-    tenantsSnapshot.docs.forEach(tDoc => {
+    // Para cada inquilino, también borrar sus pagos
+    for (const tDoc of tenantsSnapshot.docs) {
       batch.delete(tDoc.ref);
-    });
+      
+      // Borrar pagos del inquilino
+      const paymentsQ = query(
+        collection(db, 'payments'),
+        where('tenantId', '==', tDoc.id),
+        where('userId', '==', userId)
+      );
+      const paymentsSnapshot = await getDocs(paymentsQ);
+      paymentsSnapshot.docs.forEach(pDoc => {
+        batch.delete(pDoc.ref);
+      });
+    }
 
-    // 3. Buscar y borrar gastos asociados
-    const expensesQ = query(collection(db, 'expenses'), where('propertyId', '==', propertyId));
+    // 3. Buscar y borrar gastos asociados (filtrar por userId para cumplir reglas)
+    const expensesQ = query(
+      collection(db, 'expenses'), 
+      where('propertyId', '==', propertyId),
+      where('userId', '==', userId)
+    );
     const expensesSnapshot = await getDocs(expensesQ);
     
     expensesSnapshot.docs.forEach(eDoc => {
@@ -170,13 +190,18 @@ export const updateTenant = async (tenantId, tenantData) => {
 
 export const deleteTenantAtomic = async (tenantId) => {
   try {
-    const batch = writeBatch(db);
     const userId = auth.currentUser?.uid;
-
     if (!userId) throw new Error("No authenticated user");
     
-    // 1. Referencia al inquilino
+    // 1. Verificar que el inquilino pertenece al usuario
     const tenantRef = doc(db, 'tenants', tenantId);
+    const tenantDoc = await getDoc(tenantRef);
+    
+    if (!tenantDoc.exists() || tenantDoc.data().userId !== userId) {
+      throw new Error("No tienes permiso para eliminar este inquilino");
+    }
+    
+    const batch = writeBatch(db);
     batch.delete(tenantRef);
 
     // 2. Buscar y borrar pagos asociados

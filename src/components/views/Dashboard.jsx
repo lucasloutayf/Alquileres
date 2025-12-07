@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Plus, FileText, DollarSign, TrendingDown, Users, AlertTriangle } from 'lucide-react';
+import { Plus, FileText, DollarSign, TrendingDown, Users, AlertTriangle, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, Reorder, useScroll, useTransform } from 'framer-motion';
 import StatCard3D from '../common/StatCard3D';
@@ -13,6 +13,7 @@ import { getTenantPaymentStatus } from '../../utils/paymentUtils';
 import { generateMonthlyReport } from '../../utils/pdfGenerator';
 import toast from 'react-hot-toast';
 import { logger } from '../../utils/logger';
+import { exportMonthlyReport } from '../../utils/exportUtils';
 
 import { useProperties } from '../../hooks/useProperties';
 import { useTenants } from '../../hooks/useTenants';
@@ -204,6 +205,34 @@ const Dashboard = ({ user, theme }) => {
     }
   };
 
+  const handleExportToExcel = () => {
+    try {
+      const paymentsMonth = payments.filter(p => {
+        const pDate = new Date(p.date);
+        return pDate.getMonth() === currentMonth && pDate.getFullYear() === currentYear;
+      });
+
+      const expensesMonth = expenses.filter(e => {
+        const eDate = new Date(e.date);
+        return eDate.getMonth() === currentMonth && eDate.getFullYear() === currentYear;
+      });
+
+      exportMonthlyReport({
+        payments: paymentsMonth,
+        expenses: expensesMonth,
+        tenants,
+        properties,
+        month: currentMonth,
+        year: currentYear
+      });
+      
+      toast.success('Excel exportado correctamente');
+    } catch (error) {
+      logger.error('Error exportando a Excel:', error);
+      toast.error('Error al exportar a Excel');
+    }
+  };
+
   const statsComponents = useMemo(() => ({
     income: (
       <StatCard3D 
@@ -304,6 +333,15 @@ const Dashboard = ({ user, theme }) => {
         <div className="flex gap-3 w-full sm:w-auto">
           <Button 
             variant="outline" 
+            onClick={handleExportToExcel}
+            className="flex-1 sm:flex-initial"
+            title="Exportar a Excel"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            <span className="hidden sm:inline">Excel</span>
+          </Button>
+          <Button 
+            variant="outline" 
             onClick={handleGenerateMonthlyReport}
             className="flex-1 sm:flex-initial"
           >
@@ -338,73 +376,61 @@ const Dashboard = ({ user, theme }) => {
         </Reorder.Group>
       </div>
 
-      {/* Chart & Properties Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content (Properties) */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Propiedades</h2>
-            <Button variant="link" className="text-sm h-auto p-0">Ver todas</Button>
-          </div>
-          
-          {properties.length === 0 ? (
-            <div>
-              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-dashed rounded-xl p-12 text-center">
-                <div className="max-w-sm mx-auto">
-                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Plus className="w-8 h-8 text-gray-400 dark:text-gray-500" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    No hay propiedades registradas
-                  </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                    Comienza agregando tu primera propiedad para gestionar inquilinos y pagos
-                  </p>
-                  <Button 
-                    onClick={() => setIsPropertyFormOpen(true)}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Agregar Primera Propiedad
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {properties.map((prop) => (
-                <div key={prop.id}>
-                  <PropertyCard
-                    property={prop}
-                    tenants={tenants}
-                    onEdit={openEditModal}
-                    onDelete={openDeleteModal}
-                    onClick={() => navigate(`/property/${prop.id}`)}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+      {/* Properties Section */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Propiedades</h2>
+          <Button variant="link" className="text-sm h-auto p-0">Ver todas</Button>
         </div>
+        
+        {properties.length === 0 ? (
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-dashed rounded-xl p-12 text-center">
+            <div className="max-w-sm mx-auto">
+              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Plus className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                No hay propiedades registradas
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                Comienza agregando tu primera propiedad para gestionar inquilinos y pagos
+              </p>
+              <Button onClick={() => setIsPropertyFormOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Agregar Propiedad
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {properties.map(prop => (
+              <PropertyCard
+                key={prop.id}
+                property={prop}
+                tenants={tenants}
+                onEdit={openEditModal}
+                onDelete={openDeleteModal}
+                onClick={() => navigate(`/property/${prop.id}`)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
-        {/* Sidebar Content (Charts/Summary) */}
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Resumen Financiero</h2>
-            {incomeByProperty.length > 0 ? (
-              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm mt-4">
-                <BarChart 
-                  data={incomeByProperty} 
-                  title="Ingresos por Propiedad" 
-                  theme={theme}
-                />
-              </div>
-            ) : (
-              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 text-center text-gray-500 dark:text-gray-400 text-sm mt-4">
-                No hay datos financieros suficientes para mostrar gráficos.
-              </div>
-            )}
+      {/* Financial Summary - Full Width */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Resumen Financiero</h2>
+        {incomeByProperty.length > 0 ? (
+          <BarChart 
+            data={incomeByProperty} 
+            title="Ingresos por Propiedad (Mes Actual)" 
+            theme={theme}
+          />
+        ) : (
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 text-center text-gray-500 dark:text-gray-400 text-sm">
+            No hay datos financieros suficientes para mostrar gráficos.
           </div>
-        </div>
+        )}
       </div>
 
       {/* Modals */}
@@ -440,3 +466,4 @@ const Dashboard = ({ user, theme }) => {
 };
 
 export default Dashboard;
+

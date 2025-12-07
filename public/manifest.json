@@ -1,0 +1,21 @@
+{
+  "name": "Gestor de Alquileres Pro",
+  "short_name": "Alquileres",
+  "description": "Gestión de propiedades, inquilinos, pagos y gastos",
+  "theme_color": "#10B981",
+  "background_color": "#030712",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["business", "finance", "productivity"],
+  "lang": "es-AR"
+}

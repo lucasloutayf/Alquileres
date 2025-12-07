@@ -24,6 +24,20 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
+// Colores para múltiples barras
+const BAR_COLORS = [
+  '#10b981', // emerald-500
+  '#3b82f6', // blue-500
+  '#8b5cf6', // violet-500
+  '#f59e0b', // amber-500
+  '#ef4444', // red-500
+  '#06b6d4', // cyan-500
+  '#ec4899', // pink-500
+  '#84cc16', // lime-500
+  '#6366f1', // indigo-500
+  '#14b8a6', // teal-500
+];
+
 const BarChart = ({ data, title, barColor = 'emerald', theme }) => {
   // Definir colores basados en el tema
   const isDark = theme === 'dark';
@@ -40,21 +54,49 @@ const BarChart = ({ data, title, barColor = 'emerald', theme }) => {
       </div>
     );
   }
+
+  // Calcular tamaño de barra dinámicamente basado en cantidad de datos
+  const calculateBarSize = () => {
+    const count = data.length;
+    if (count <= 3) return 60;
+    if (count <= 5) return 45;
+    if (count <= 8) return 35;
+    if (count <= 12) return 25;
+    return 20;
+  };
+
+  // Truncar labels largos
+  const truncateLabel = (label, maxLength = 15) => {
+    if (!label) return '';
+    if (label.length <= maxLength) return label;
+    return label.substring(0, maxLength - 3) + '...';
+  };
+
+  // Calcular ángulo del label basado en cantidad de datos
+  const getLabelAngle = () => {
+    const count = data.length;
+    if (count <= 4) return 0;
+    if (count <= 6) return -25;
+    return -45;
+  };
+
+  const angle = getLabelAngle();
+  const barSize = calculateBarSize();
   
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       {title && <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">{title}</h3>}
-      <div className="w-full" style={{ height: 300 }}>
-        <ResponsiveContainer width="100%" height={300}>
+      <div className="w-full" style={{ height: data.length > 6 ? 350 : 300 }}>
+        <ResponsiveContainer width="100%" height="100%">
           <RechartsBarChart
             data={data}
             margin={{
               top: 10,
               right: 10,
-              left: -20,
-              bottom: 0,
+              left: -10,
+              bottom: angle < 0 ? 60 : 20,
             }}
-            barSize={40}
+            barSize={barSize}
           >
             <defs>
               <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
@@ -81,8 +123,12 @@ const BarChart = ({ data, title, barColor = 'emerald', theme }) => {
               dataKey="label" 
               axisLine={false}
               tickLine={false}
-              tick={{ fill: axisColor, fontSize: 12 }}
-              dy={10}
+              tick={{ fill: axisColor, fontSize: 11 }}
+              angle={angle}
+              textAnchor={angle < 0 ? 'end' : 'middle'}
+              height={angle < 0 ? 80 : 40}
+              interval={0}
+              tickFormatter={(value) => truncateLabel(value)}
             />
             <YAxis 
               axisLine={false}
@@ -96,14 +142,16 @@ const BarChart = ({ data, title, barColor = 'emerald', theme }) => {
             />
             <Bar 
               dataKey="value" 
-              fill="url(#barGradient)" 
               radius={[6, 6, 0, 0]}
               filter="url(#barShadow)"
               animationDuration={1500}
               animationEasing="ease-out"
             >
               {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} />
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={BAR_COLORS[index % BAR_COLORS.length]}
+                />
               ))}
             </Bar>
           </RechartsBarChart>

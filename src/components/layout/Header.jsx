@@ -6,7 +6,6 @@ import {
   TrendingUp, 
   TrendingDown, 
   Calendar, 
-  Bell, 
   Sun, 
   Moon, 
   LogOut,
@@ -18,12 +17,21 @@ import { auth } from '../../firebase/config';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../utils/cn';
+import NotificationBell from '../common/NotificationBell';
+import { useNotifications } from '../../hooks/useNotifications';
+import { useTenants } from '../../hooks/useTenants';
+import { usePayments } from '../../hooks/usePayments';
 
 const Header = ({ user, theme, toggleTheme }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Hooks para notificaciones
+  const { tenants } = useTenants(user?.uid);
+  const { allPayments } = usePayments(user?.uid);
+  const notifications = useNotifications(tenants, allPayments);
 
   // Handle scroll effect
   useEffect(() => {
@@ -119,12 +127,7 @@ const Header = ({ user, theme, toggleTheme }) => {
             <div className="flex items-center gap-2 xl:gap-3">
               
               {/* Notificaciones */}
-              <button 
-                className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                aria-label="Notificaciones"
-              >
-                <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-              </button>
+              <NotificationBell notifications={notifications} />
               
               {/* Perfil */}
               <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors">

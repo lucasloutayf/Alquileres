@@ -480,13 +480,23 @@ const PropertyDetail = ({ user }) => {
         isOpen={paymentsModalOpen} 
         onClose={() => { setPaymentsModalOpen(false); setSelectedTenant(null); }} 
         title={`Pagos - ${selectedTenant?.name}`}
+        size="lg"
       >
         {selectedTenant && (
-          <PaymentsModal 
-            user={user}
-            tenant={selectedTenant} 
-            onClose={() => { setPaymentsModalOpen(false); setSelectedTenant(null); }} 
-          />
+          <div className="space-y-6">
+            <PaymentsModal 
+              user={user}
+              tenant={selectedTenant} 
+              onClose={() => { setPaymentsModalOpen(false); setSelectedTenant(null); }} 
+            />
+            
+            {/* Sección de documentos */}
+            <DocumentUploader 
+              userId={user?.uid}
+              tenantId={selectedTenant.id}
+              tenantName={selectedTenant.name}
+            />
+          </div>
         )}
       </Modal>
 
