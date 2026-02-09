@@ -4,8 +4,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { propertySchema, propertyTypes } from '../../schemas/propertySchema';
 import Button from '../common/Button';
 import { Home, MapPin, Bed, Shield, FileText } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -62,7 +64,7 @@ const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
         <label className={labelClasses}>
           <span className="flex items-center gap-2">
             <Home className="w-4 h-4" />
-            Título <span className="text-rose-500">*</span>
+            {t('forms.property.title')} <span className="text-rose-500">*</span>
           </span>
         </label>
         <input
@@ -72,20 +74,20 @@ const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
           placeholder="Ej: Edificio San Martín"
         />
         {errors.title && (
-          <p className="text-sm text-rose-500 mt-1">{errors.title.message}</p>
+          <p className="text-sm text-rose-500 mt-1">{t('validation.required')}</p>
         )}
       </div>
 
       {/* Tipo de Propiedad */}
       <div>
         <label className={labelClasses}>
-          Tipo de Propiedad <span className="text-rose-500">*</span>
+          {t('forms.property.type')} <span className="text-rose-500">*</span>
         </label>
         <select
           {...register('propertyType')}
           className={inputClasses(errors.propertyType)}
         >
-          <option value="">Seleccionar tipo...</option>
+          <option value="">{t('forms.property.selectType')}</option>
           {propertyTypes.map(type => (
             <option key={type.value} value={type.value}>
               {type.label}
@@ -93,20 +95,20 @@ const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
           ))}
         </select>
         {errors.propertyType && (
-          <p className="text-sm text-rose-500 mt-1">{errors.propertyType.message}</p>
+          <p className="text-sm text-rose-500 mt-1">{t('validation.required')}</p>
         )}
       </div>
 
       {/* Descripción */}
       <div>
         <label className={labelClasses}>
-          Descripción
+          {t('forms.property.description')}
         </label>
         <textarea
           {...register('description')}
           rows={2}
           className={inputClasses(errors.description)}
-          placeholder="Breve descripción de la propiedad..."
+          placeholder={t('forms.property.description')}
         />
         {errors.description && (
           <p className="text-sm text-rose-500 mt-1">{errors.description.message}</p>
@@ -118,7 +120,7 @@ const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
         <label className={labelClasses}>
           <span className="flex items-center gap-2">
             <MapPin className="w-4 h-4" />
-            Dirección <span className="text-rose-500">*</span>
+            {t('forms.property.address')} <span className="text-rose-500">*</span>
           </span>
         </label>
         <input
@@ -128,7 +130,7 @@ const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
           placeholder="Ej: Calle Falsa 123, Piso 2, Depto A"
         />
         {errors.address && (
-          <p className="text-sm text-rose-500 mt-1">{errors.address.message}</p>
+          <p className="text-sm text-rose-500 mt-1">{t('validation.required')}</p>
         )}
       </div>
 
@@ -137,7 +139,7 @@ const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
         <label className={labelClasses}>
           <span className="flex items-center gap-2">
             <Bed className="w-4 h-4" />
-            Cantidad de Habitaciones <span className="text-rose-500">*</span>
+            {t('forms.property.totalRooms')} <span className="text-rose-500">*</span>
           </span>
         </label>
         <input
@@ -148,10 +150,10 @@ const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
           min="1"
         />
         {errors.totalRooms && (
-          <p className="text-sm text-rose-500 mt-1">{errors.totalRooms.message}</p>
+          <p className="text-sm text-rose-500 mt-1">{t('validation.required')}</p>
         )}
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          Total de habitaciones disponibles para alquilar
+          {t('forms.property.roomsHelper')}
         </p>
       </div>
 
@@ -160,14 +162,14 @@ const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
         <label className={labelClasses}>
           <span className="flex items-center gap-2">
             <Shield className="w-4 h-4" />
-            Detalles del Seguro
+            {t('forms.property.insurance')}
           </span>
         </label>
         <textarea
           {...register('insuranceDetails')}
           rows={2}
           className={inputClasses(errors.insuranceDetails)}
-          placeholder="Compañía, número de póliza, vencimiento..."
+          placeholder={t('forms.property.insurancePlaceholder')}
         />
         {errors.insuranceDetails && (
           <p className="text-sm text-rose-500 mt-1">{errors.insuranceDetails.message}</p>
@@ -179,14 +181,14 @@ const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
         <label className={labelClasses}>
           <span className="flex items-center gap-2">
             <FileText className="w-4 h-4" />
-            Observaciones
+            {t('forms.property.observations')}
           </span>
         </label>
         <textarea
           {...register('observations')}
           rows={2}
           className={inputClasses(errors.observations)}
-          placeholder="Notas adicionales sobre la propiedad..."
+          placeholder={t('forms.property.observationsPlaceholder')}
         />
         {errors.observations && (
           <p className="text-sm text-rose-500 mt-1">{errors.observations.message}</p>
@@ -204,7 +206,7 @@ const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
           variant="secondary"
           className="flex-1"
         >
-          Cancelar
+          {t('common.cancel')}
         </Button>
         <Button
           type="submit"
@@ -212,7 +214,7 @@ const PropertyForm = ({ isOpen, onClose, onSubmit, property }) => {
           className="flex-1"
           disabled={isSubmitting}
         >
-          {property ? 'Guardar Cambios' : 'Agregar Propiedad'}
+          {property ? t('common.save') : t('dashboard.addProperty')}
         </Button>
       </div>
     </form>

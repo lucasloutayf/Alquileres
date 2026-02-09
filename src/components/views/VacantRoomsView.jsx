@@ -6,7 +6,10 @@ import { useTenants } from '../../hooks/useTenants';
 
 import { useNavigate } from 'react-router-dom';
 
+import { useTranslation } from 'react-i18next';
+
 const VacantRoomsView = ({ user }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { properties, loading: propertiesLoading } = useProperties(user?.uid);
   const { tenants, loading: tenantsLoading } = useTenants(user?.uid);
@@ -42,21 +45,21 @@ const VacantRoomsView = ({ user }) => {
           onClick={() => navigate('/')} 
           className="flex items-center gap-2 px-4 py-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-lg transition-colors"
         >
-          <span className="text-xl">←</span> Volver
+          <span className="text-xl">←</span> {t('common.back')}
         </button>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Habitaciones Vacías</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('vacant.title')}</h1>
         <div></div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <StatCard 
-          title="Total Habitaciones Vacías" 
+          title={t('vacant.totalVacant')} 
           value={totalVacant} 
           icon={<Home className="w-6 h-6" />}
           colorClass="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800" 
         />
         <StatCard 
-          title="Ocupación General" 
+          title={t('vacant.occupancyRate')} 
           value={`${(((totalRooms - totalVacant) / totalRooms) * 100).toFixed(0)}%`} 
           icon={<BarChart3 className="w-6 h-6" />}
           colorClass="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800" 
@@ -70,7 +73,7 @@ const VacantRoomsView = ({ user }) => {
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">{data.property.address}</h3>
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  {data.vacant} / {data.total} vacías
+                  {data.vacant} / {data.total} {t('vacant.vacant')}
                 </span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
@@ -78,7 +81,7 @@ const VacantRoomsView = ({ user }) => {
                   className="bg-emerald-600 dark:bg-emerald-400 h-4 rounded-full transition-all duration-500 flex items-center justify-end pr-2" 
                   style={{width: `${100 - data.percentage}%`}}
                 >
-                  <span className="text-xs font-bold text-white">{100 - data.percentage}% ocupado</span>
+                  <span className="text-xs font-bold text-white">{100 - data.percentage}% {t('vacant.occupied')}</span>
                 </div>
               </div>
             </div>

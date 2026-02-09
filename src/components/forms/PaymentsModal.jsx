@@ -8,8 +8,10 @@ import Input from '../common/Input';
 import Button from '../common/Button';
 import { usePayments } from '../../hooks/usePayments';
 import { logger } from '../../utils/logger';
+import { useTranslation } from 'react-i18next';
 
 const PaymentsModal = ({ user, tenant }) => {
+  const { t } = useTranslation();
   const { 
     payments, 
     addPayment, 
@@ -43,17 +45,17 @@ const PaymentsModal = ({ user, tenant }) => {
     e.preventDefault();
     
     if (!amount || parseInt(amount) <= 0) {
-      toast.error('El monto base debe ser mayor a 0');
+      toast.error(t('payments.errorAmountZero'));
       return;
     }
     
     if (adjustmentType !== 'none') {
       if (!adjustment || parseInt(adjustment) <= 0) {
-        toast.error('El monto de ajuste debe ser mayor a 0');
+        toast.error(t('payments.errorAdjustmentZero'));
         return;
       }
       if (!adjustmentReason || adjustmentReason.trim() === '') {
-        toast.error('Debe indicar el motivo del ajuste');
+        toast.error(t('payments.errorReasonRequired'));
         return;
       }
     }
@@ -127,12 +129,12 @@ const PaymentsModal = ({ user, tenant }) => {
       <form onSubmit={handleSubmit} className="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2 mb-6">
           <CreditCard className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-          <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Registrar Nuevo Pago</h3>
+          <h3 className="font-semibold text-lg text-gray-900 dark:text-white">{t('payments.registerNew')}</h3>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <Input
-            label="Monto Base"
+            label={t('payments.baseAmount')}
             type="number"
             required
             value={amount}
@@ -140,7 +142,7 @@ const PaymentsModal = ({ user, tenant }) => {
             icon={DollarSign}
           />
           <Input
-            label="Fecha de Pago"
+            label={t('payments.paymentDate')}
             type="date"
             required
             value={date}
@@ -148,7 +150,7 @@ const PaymentsModal = ({ user, tenant }) => {
             icon={Calendar}
           />
           <Input
-            label="Fecha de Vencimiento"
+            label={t('payments.dueDate')}
             type="date"
             required
             value={dueDate}
@@ -160,7 +162,7 @@ const PaymentsModal = ({ user, tenant }) => {
         {/* Multas/Descuentos */}
         <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
           <label className="block text-sm font-medium text-gray-900 dark:text-white mb-4">
-            Ajustes (Opcional)
+            {t('payments.adjustments')}
           </label>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -180,9 +182,9 @@ const PaymentsModal = ({ user, tenant }) => {
                   }}
                   className="w-full pl-10 pr-4 py-2 h-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all appearance-none"
                 >
-                  <option value="none">Sin ajuste</option>
-                  <option value="surcharge">Multa/Cargo</option>
-                  <option value="discount">Descuento</option>
+                  <option value="none">{t('payments.noAdjustment')}</option>
+                  <option value="surcharge">{t('payments.surcharge')}</option>
+                  <option value="discount">{t('payments.discount')}</option>
                 </select>
               </div>
             </div>
@@ -190,14 +192,14 @@ const PaymentsModal = ({ user, tenant }) => {
             {adjustmentType !== 'none' && (
               <>
                 <Input
-                  placeholder="Monto"
+                  placeholder={t('payments.amount')}
                   type="number"
                   value={adjustment}
                   onChange={e => setAdjustment(e.target.value)}
                   icon={DollarSign}
                 />
                 <Input
-                  placeholder="Motivo"
+                  placeholder={t('payments.reason')}
                   type="text"
                   value={adjustmentReason}
                   onChange={e => setAdjustmentReason(e.target.value)}
@@ -212,7 +214,7 @@ const PaymentsModal = ({ user, tenant }) => {
         {adjustmentType !== 'none' && (
           <div className="mt-6 p-4 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-lg border border-emerald-100 dark:border-emerald-900/20">
             <div className="flex justify-between items-center text-sm mb-2">
-              <span className="text-gray-500 dark:text-gray-400">Monto base:</span>
+              <span className="text-gray-500 dark:text-gray-400">{t('payments.base')}:</span>
               <span className="font-medium text-gray-900 dark:text-white">
                 ${parseInt(amount || 0).toLocaleString('es-AR')}
               </span>
@@ -222,12 +224,12 @@ const PaymentsModal = ({ user, tenant }) => {
                 {adjustmentType === 'surcharge' ? (
                   <>
                     <Plus className="w-4 h-4" />
-                    <span>Multa/Cargo:</span>
+                    <span>{t('payments.surcharge')}:</span>
                   </>
                 ) : (
                   <>
                     <Minus className="w-4 h-4" />
-                    <span>Descuento:</span>
+                    <span>{t('payments.discount')}:</span>
                   </>
                 )}
               </span>
@@ -236,7 +238,7 @@ const PaymentsModal = ({ user, tenant }) => {
               </span>
             </div>
             <div className="flex justify-between items-center text-base font-bold border-t border-emerald-100 dark:border-emerald-900/20 pt-3 mt-2">
-              <span className="text-gray-900 dark:text-white">Total a pagar:</span>
+              <span className="text-gray-900 dark:text-white">{t('payments.totalToPay')}:</span>
               <span className="text-emerald-600 dark:text-emerald-400 text-xl">
                 ${finalAmount.toLocaleString('es-AR')}
               </span>
@@ -251,16 +253,16 @@ const PaymentsModal = ({ user, tenant }) => {
             className="w-full"
             variant="default"
           >
-            Registrar Pago
+            {t('payments.register')}
           </Button>
         </div>
       </form>
 
       <div>
-        <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-4">Historial de Pagos</h3>
+        <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-4">{t('payments.history')}</h3>
         {tenantPayments.length === 0 ? (
           <p className="text-gray-500 dark:text-gray-400 text-center py-8 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
-            No hay pagos registrados
+            {t('payments.noPayments')}
           </p>
         ) : (
           <div className="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
@@ -280,12 +282,12 @@ const PaymentsModal = ({ user, tenant }) => {
                         {payment.adjustmentType === 'surcharge' ? (
                           <>
                             <Plus className="w-3 h-3" />
-                            <span>Multa</span>
+                            <span>{t('payments.surcharge')}</span>
                           </>
                         ) : (
                           <>
                             <Minus className="w-3 h-3" />
-                            <span>Descuento</span>
+                            <span>{t('payments.discount')}</span>
                           </>
                         )}
                       </span>
@@ -297,7 +299,7 @@ const PaymentsModal = ({ user, tenant }) => {
                     </span>
                     {payment.adjustmentType && (
                       <span className="text-xs text-gray-500 dark:text-gray-400">
-                        (Base: ${payment.baseAmount.toLocaleString('es-AR')} {payment.adjustmentType === 'surcharge' ? '+' : '-'}${payment.adjustment.toLocaleString('es-AR')})
+                        ({t('payments.base')}: ${payment.baseAmount.toLocaleString('es-AR')} {payment.adjustmentType === 'surcharge' ? '+' : '-'}${payment.adjustment.toLocaleString('es-AR')})
                       </span>
                     )}
                   </div>
@@ -314,7 +316,7 @@ const PaymentsModal = ({ user, tenant }) => {
                     size="sm"
                     icon={<FileText className="w-4 h-4" />}
                   >
-                    Recibo
+                    {t('payments.receipt')}
                   </Button>
                   <Button 
                     onClick={() => setPaymentToDelete(payment)}
@@ -338,7 +340,7 @@ const PaymentsModal = ({ user, tenant }) => {
               onClick={loadMore}
               disabled={loadingMore}
             >
-              {loadingMore ? 'Cargando...' : 'Cargar más pagos'}
+              {loadingMore ? t('common.loading') : t('payments.loadMore')}
             </Button>
           </div>
         )}
@@ -348,8 +350,8 @@ const PaymentsModal = ({ user, tenant }) => {
         isOpen={!!paymentToDelete}
         onClose={() => setPaymentToDelete(null)}
         onConfirm={handleDeletePayment}
-        title="Eliminar Pago"
-        message="¿Estás seguro de eliminar este pago? Esta acción no se puede deshacer."
+        title={t('payments.deleteTitle')}
+        message={t('payments.deleteMessage')}
         isLoading={isDeleting}
       />
     </div>

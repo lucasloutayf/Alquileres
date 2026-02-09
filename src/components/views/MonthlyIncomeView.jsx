@@ -11,8 +11,10 @@ import { useProperties } from '../../hooks/useProperties';
 import { logger } from '../../utils/logger';
 
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const MonthlyIncomeView = ({ user, theme }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { payments, loading: paymentsLoading } = usePayments(user?.uid);
   const { expenses, loading: expensesLoading } = useExpenses(user?.uid);
@@ -62,7 +64,7 @@ const MonthlyIncomeView = ({ user, theme }) => {
       const pdf = generateAnnualReport(reportData);
       pdf.save(`reporte-anual-${currentYear}.pdf`);
       
-      toast.success('Reporte anual descargado');
+      toast.success(t('income.toastSuccess'));
     } catch (error) {
       logger.error('Error generando reporte:', error);
       toast.error('Error al generar reporte');
@@ -104,34 +106,34 @@ const MonthlyIncomeView = ({ user, theme }) => {
           onClick={() => navigate('/')} 
           className="flex items-center gap-2 px-4 py-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900 rounded-lg transition-colors"
         >
-          <span className="text-xl">←</span> Volver
+          <span className="text-xl">←</span> {t('common.back')}
         </button>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Ingresos Mensuales</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('income.title')}</h1>
         <button
           onClick={handleGenerateAnnualReport}
           className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
         >
           <BarChart3 className="w-5 h-5" />
-          <span>Reporte Anual</span>
+          <span>{t('income.annualReport')}</span>
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <StatCard 
-          title="Ingreso Este Mes" 
+          title={t('income.thisMonth')} 
           value={`$${thisMonthIncome.toLocaleString('es-AR')}`} 
           icon={<DollarSign className="w-6 h-6" />}
           colorClass="green" 
         />
         <StatCard 
-          title="Variación vs Mes Anterior" 
+          title={t('income.variation')} 
           value={`${change > 0 ? '+' : ''}${change}%`} 
           icon={change >= 0 ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
           colorClass={change >= 0 ? "blue" : "red"} 
         />
       </div>
 
-      <BarChart data={monthlyData} title="Historial de Ingresos (últimos 12 meses)" theme={theme} />
+      <BarChart data={monthlyData} title={t('income.history')} theme={theme} />
     </div>
   );
 };

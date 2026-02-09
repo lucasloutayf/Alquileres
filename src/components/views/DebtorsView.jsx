@@ -16,7 +16,10 @@ import {
 
 import { useNavigate } from 'react-router-dom';
 
+import { useTranslation } from 'react-i18next';
+
 const DebtorsView = ({ user }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { tenants, loading: tenantsLoading } = useTenants(user?.uid);
   const { payments, loading: paymentsLoading } = usePayments(user?.uid, { recent: true, days: 60 });
@@ -53,21 +56,21 @@ const DebtorsView = ({ user }) => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="text-3xl font-display font-bold text-foreground">Inquilinos con Deuda</h1>
-            <p className="text-sm text-muted-foreground mt-1">Gestión y seguimiento de pagos pendientes</p>
+            <h1 className="text-3xl font-display font-bold text-foreground">{t('debtors.title')}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t('debtors.subtitle')}</p>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <StatCard3D 
-          title="Total Deudores" 
+          title={t('debtors.totalDebtors')} 
           value={debtors.length} 
           icon={<AlertTriangle />} 
           colorClass="red" 
         />
         <StatCard3D 
-          title="Deuda Total Estimada" 
+          title={t('debtors.totalDebt')} 
           value={`$${totalDebt.toLocaleString('es-AR')}`} 
           icon={<DollarSign />}
           colorClass="orange" 
@@ -75,24 +78,24 @@ const DebtorsView = ({ user }) => {
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Listado de Deudores</h2>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('debtors.listTitle')}</h2>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent border-b border-gray-200 dark:border-gray-700">
-                <TableHead className="text-gray-500 dark:text-gray-400">Nombre</TableHead>
-                <TableHead className="text-gray-500 dark:text-gray-400">Teléfono</TableHead>
-                <TableHead className="text-gray-500 dark:text-gray-400">Habitación</TableHead>
-                <TableHead className="text-gray-500 dark:text-gray-400">Meses Adeudados</TableHead>
-                <TableHead className="text-gray-500 dark:text-gray-400">Deuda Estimada</TableHead>
-                <TableHead className="text-gray-500 dark:text-gray-400">Último Pago</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">{t('debtors.table.name')}</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">{t('debtors.table.phone')}</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">{t('debtors.table.room')}</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">{t('debtors.table.monthsOwed')}</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">{t('debtors.table.estimatedDebt')}</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">{t('debtors.table.lastPayment')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {debtors.length === 0 ? (
                 <TableRow className="border-0">
                   <TableCell colSpan={6} className="text-center py-8 text-gray-500 dark:text-gray-400">
-                    No hay inquilinos con deuda registrada.
+                    {t('debtors.table.empty')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -109,7 +112,7 @@ const DebtorsView = ({ user }) => {
                     </TableCell>
                     <TableCell>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300">
-                        {debtor.paymentStatus.months} mes(es)
+                        {debtor.paymentStatus.months} {t('debtors.table.months')}
                       </span>
                     </TableCell>
                     <TableCell className="font-semibold text-gray-900 dark:text-gray-100">
@@ -118,7 +121,7 @@ const DebtorsView = ({ user }) => {
                     <TableCell className="text-gray-600 dark:text-gray-400">
                       {debtor.paymentStatus.lastPayment 
                         ? new Date(debtor.paymentStatus.lastPayment).toLocaleDateString('es-AR') 
-                        : 'Nunca'}
+                        : t('debtors.table.never')}
                     </TableCell>
                   </TableRow>
                 ))

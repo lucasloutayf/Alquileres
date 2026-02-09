@@ -167,3 +167,39 @@ const formatDate = (dateStr) => {
     return dateStr;
   }
 };
+
+/**
+ * Exporta backup completo de datos
+ * @param {Object} data - Objeto con todas las colecciones { payments, expenses, tenants, properties }
+ * @param {string} format - 'json' o 'excel'
+ */
+export const exportFullData = (data, format = 'json') => {
+  const timestamp = new Date().toISOString().split('T')[0];
+  const filename = `backup-gestor-alquileres-${timestamp}`;
+
+  if (format === 'json') {
+    const jsonString = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const href = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = href;
+    link.download = `${filename}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(href);
+  } else {
+    // Excel
+    const sheets = {
+      'Propiedades': formatPropertiesForExport(data.properties, data.tenants),
+      'Inquilinos': formatTenantsForExport(data.tenants, data.properties),
+      'Pagos': formatPaymentsForExport(data.payments, data.tenants),
+      'Gastos': formatExpensesForExport(data.expenses, data.properties),
+      'Raw_Properties': data.properties,
+      'Raw_Tenants': data.tenants,
+      'Raw_Payments': data.payments,
+      'Raw_Expenses': data.expenses
+    };
+    exportMultipleSheets(sheets, filename);
+  }
+};

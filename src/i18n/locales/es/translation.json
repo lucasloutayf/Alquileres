@@ -1,0 +1,290 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "add": "Agregar",
+    "search": "Buscar",
+    "actions": "Acciones",
+    "confirm": "Confirmar",
+    "back": "Volver",
+    "viewAll": "Ver todas",
+    "edit": "Editar",
+    "download": "Descargar",
+    "payments": "Pagos",
+    "report": "Reporte",
+    "admin": "Admin"
+  },
+  "forms": {
+    "tenant": {
+      "titleAdd": "Agregar Inquilino",
+      "titleEdit": "Editar Inquilino",
+      "name": "Nombre Completo",
+      "dni": "DNI",
+      "phone": "Teléfono Principal",
+      "room": "Número de Habitación",
+      "rent": "Monto de Alquiler",
+      "entryDate": "Fecha de Entrada",
+      "exitDate": "Fecha de Salida (opcional)",
+      "contractStatus": "Estado del Contrato",
+      "emergencyPhones": "Teléfonos de Contacto de Emergencia",
+      "addPhone": "Agregar",
+      "phonePlaceholder": "+54 9 11 1234-5678",
+      "enterToAdd": "Presiona Enter o click en \"Agregar\" para añadir un teléfono"
+    },
+    "expense": {
+      "description": "Descripción",
+      "descriptionPlaceholder": "Ej: Reparación de cañería",
+      "property": "Propiedad",
+      "selectProperty": "Seleccionar propiedad...",
+      "category": "Categoría",
+      "amount": "Monto",
+      "amountPlaceholder": "Ej: 15000",
+      "date": "Fecha"
+    },
+    "property": {
+        "title": "Título",
+        "type": "Tipo de Propiedad",
+        "selectType": "Seleccionar tipo...",
+        "description": "Descripción",
+        "address": "Dirección",
+        "city": "Ciudad",
+        "totalRooms": "Cantidad de Habitaciones",
+        "roomsHelper": "Total de habitaciones disponibles para alquilar",
+        "insurance": "Detalles del Seguro",
+        "insurancePlaceholder": "Compañía, número de póliza, vencimiento...",
+        "observations": "Observaciones",
+        "observationsPlaceholder": "Notas adicionales sobre la propiedad..."
+    }
+  },
+  "propertyCard": {
+    "status": {
+        "full": "Completo",
+        "empty": "Vacío",
+        "partial": "Parcial"
+    },
+    "locationUnknown": "Ubicación no especificada",
+    "occupancy": "Ocupación",
+    "income": "Ingresos"
+  },
+  "validation": {
+    "required": "Este campo es requerido",
+    "invalidEmail": "Email inválido",
+    "minLength": "Mínimo {{min}} caracteres"
+  },
+  "propertyDetail": {
+    "notFound": "Propiedad no encontrada",
+    "backToDashboard": "Volver al Dashboard",
+    "potentialIncome": "Ingreso Mensual Potencial",
+    "vacantRooms": "Habitaciones Vacías",
+    "totalExpenses": "Gastos Totales",
+    "tenantsTitle": "Inquilinos",
+    "addTenant": "Agregar Inquilino",
+    "editTenant": "Editar Inquilino",
+    "noTenants": "No hay inquilinos registrados en esta propiedad.",
+    "expensesTitle": "Gastos",
+    "addExpense": "Agregar Gasto",
+    "noExpenses": "No hay gastos registrados.",
+    "paymentsTitle": "Pagos - {{name}}",
+    "deleteTenantTitle": "Eliminar Inquilino",
+    "deleteTenantMessage": "¿Estás seguro de eliminar al inquilino {{name}}?",
+    "table": {
+      "name": "Nombre",
+      "room": "Habitación",
+      "rent": "Alquiler",
+      "status": "Estado",
+      "actions": "Acciones",
+      "description": "Descripción",
+      "category": "Categoría",
+      "amount": "Monto",
+      "date": "Fecha"
+    },
+    "status": {
+      "active": "Activo",
+      "finished": "Finalizado",
+      "upToDate": "Al día",
+      "noPayments": "Sin pagos",
+      "late": "Debe {{months}} meses"
+    }
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "debtors": "Deudores",
+    "rooms": "Habitaciones",
+    "income": "Ingresos",
+    "expenses": "Gastos",
+    "calendar": "Calendario",
+    "settings": "Configuración",
+    "logout": "Salir",
+    "theme": "Cambiar tema",
+    "menu": "Menú"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Vista general de tus propiedades y finanzas",
+    "monthlyReport": "Reporte Mensual",
+    "addProperty": "Agregar Propiedad",
+    "editProperty": "Editar Propiedad",
+    "deleteConfirmTitle": "Eliminar Propiedad",
+    "deleteConfirmMessage": "¿Estás seguro de eliminar la propiedad {{address}}? Esta acción no se puede deshacer.",
+    "properties": "Propiedades",
+    "financialSummary": "Resumen Financiero",
+    "analytics": "Analytics",
+    "revenueTrend": "Balance Financiero Anual",
+    "expenseCategory": "Gastos por Categoría",
+    "occupancy": "Ocupación por Propiedad",
+    "topIncome": "Top Ingresos por Propiedad",
+    "noProperties": "No hay propiedades registradas",
+    "startAdding": "Comienza agregando tu primera propiedad",
+    "noData": "Sin datos disponibles"
+  },
+  "stats": {
+    "income": "Ingresos del Mes",
+    "expenses": "Gastos Mensuales",
+    "tenants": "Inquilinos Activos",
+    "debtors": "Deudores"
+  },
+  "debtors": {
+    "title": "Inquilinos con Deuda",
+    "subtitle": "Gestión y seguimiento de pagos pendientes",
+    "totalDebtors": "Total Deudores",
+    "totalDebt": "Deuda Total Estimada",
+    "listTitle": "Listado de Deudores",
+    "table": {
+      "name": "Nombre",
+      "phone": "Teléfono",
+      "room": "Habitación",
+      "monthsOwed": "Meses Adeudados",
+      "estimatedDebt": "Deuda Estimada",
+      "lastPayment": "Último Pago",
+      "months": "mes(es)",
+      "never": "Nunca",
+      "empty": "No hay inquilinos con deuda registrada."
+    }
+  },
+  "vacant": {
+    "title": "Habitaciones Vacías",
+    "totalVacant": "Total Habitaciones Vacías",
+    "occupancyRate": "Ocupación General",
+    "vacant": "vacías",
+    "occupied": "ocupado"
+  },
+  "income": {
+    "title": "Ingresos Mensuales",
+    "annualReport": "Reporte Anual",
+    "thisMonth": "Ingreso Este Mes",
+    "variation": "Variación vs Mes Anterior",
+    "history": "Historial de Ingresos (últimos 12 meses)",
+    "toastSuccess": "Reporte anual descargado"
+  },
+  "expenses": {
+    "title": "Gastos",
+    "add": "Agregar Gasto",
+    "total": "GASTOS TOTALES",
+    "byCategory": "Gastos por Categoría",
+    "byProperty": "Gastos por Propiedad",
+    "detail": "Detalle de Gastos",
+    "loadMore": "Cargar más gastos",
+    "table": {
+      "description": "DESCRIPCIÓN",
+      "property": "PROPIEDAD",
+      "category": "CATEGORÍA",
+      "amount": "MONTO",
+      "date": "FECHA",
+      "actions": "ACCIONES"
+    },
+    "deleteConfirm": {
+      "title": "Eliminar Gasto",
+      "message": "¿Estás seguro de eliminar este gasto? Esta acción no se puede deshacer."
+    }
+  },
+  "calendar": {
+    "title": "Calendario de Vencimientos",
+    "subtitle": "Gestión de cobros y vencimientos",
+    "allProperties": "Todas las propiedades",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "upcoming": "Próximos Vencimientos",
+    "noUpcoming": "No hay vencimientos pendientes",
+    "selectDay": "Selecciona un día para ver los detalles",
+    "status": {
+      "overdue": "Vencido",
+      "dueToday": "Vence Hoy",
+      "daysRemaining": "días restantes",
+      "upcoming": "Próximo a vencer (≤5 días)",
+      "upToDate": "Al día"
+    },
+    "weekdays": ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
+  },
+  "settings": {
+    "title": "Configuración y Datos",
+    "subtitle": "Administra tus copias de seguridad y exportación de datos",
+    "backup": {
+      "title": "Copias de Seguridad (Backup)",
+      "desc": "Descarga una copia completa de tu base de datos.",
+      "recommendation": "Recomendación importante:",
+      "recText": "Realiza una copia JSON al menos una vez al mes.",
+      "downloadJSON": "Descargar Backup Completo (JSON)",
+      "downloadExcel": "Descargar Reporte Completo (Excel)",
+      "note": "* El formato JSON es ideal para restaurar datos."
+    },
+    "restore": {
+      "title": "Restauración de Datos",
+      "desc": "Para restaurar tus datos, contacta a soporte técnico."
+    },
+    "language": {
+      "title": "Idioma",
+      "desc": "Selecciona el idioma de la aplicación"
+    }
+  },
+  "payments": {
+    "registerNew": "Registrar Nuevo Pago",
+    "baseAmount": "Monto Base",
+    "paymentDate": "Fecha de Pago",
+    "dueDate": "Fecha de Vencimiento",
+    "adjustments": "Ajustes (Opcional)",
+    "noAdjustment": "Sin ajuste",
+    "surcharge": "Multa/Cargo",
+    "discount": "Descuento",
+    "amount": "Monto",
+    "reason": "Motivo",
+    "base": "Monto base",
+    "totalToPay": "Total a pagar",
+    "register": "Registrar Pago",
+    "history": "Historial de Pagos",
+    "noPayments": "No hay pagos registrados",
+    "receipt": "Recibo",
+    "loadMore": "Cargar más pagos",
+    "deleteTitle": "Eliminar Pago",
+    "deleteMessage": "¿Estás seguro de eliminar este pago? Esta acción no se puede deshacer.",
+    "errorAmountZero": "El monto base debe ser mayor a 0",
+    "errorAdjustmentZero": "El monto de ajuste debe ser mayor a 0",
+    "errorReasonRequired": "Debe indicar el motivo del ajuste"
+  },
+  "receipt": {
+    "title": "RECIBO DE PAGO",
+    "subtitle": "Comprobante de alquiler",
+    "tenant": "Inquilino",
+    "baseAmount": "Monto base",
+    "surcharge": "Multa/Cargo",
+    "discount": "Descuento",
+    "reason": "Motivo",
+    "totalPaid": "Total Pagado",
+    "paymentDate": "Fecha de Pago",
+    "dueDate": "FECHA DE VENCIMIENTO",
+    "footer": "Este recibo certifica el pago del alquiler",
+    "download": "Descargar",
+    "copy": "Copiar",
+    "share": "Compartir",
+    "print": "Imprimir",
+    "generating": "Generando...",
+    "back": "Volver",
+    "imageCopied": "¡Imagen copiada! Pegá en WhatsApp Web con Ctrl+V",
+    "copyError": "No se pudo copiar. Usá \"Descargar\" en su lugar.",
+    "shareError": "Tu navegador no soporta compartir. Usá \"Descargar\" o \"Copiar\".",
+    "downloadError": "Error al generar la imagen"
+  }
+}

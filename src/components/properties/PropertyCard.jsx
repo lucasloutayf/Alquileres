@@ -2,11 +2,13 @@ import React from 'react';
 import { Edit, Trash2, Users, DollarSign, MapPin } from 'lucide-react';
 import { Card, CardContent } from '../common/Card';
 import Button from '../common/Button';
-import IsometricBuilding from '../common/IsometricBuilding';
+import PropertyIcon from '../common/PropertyIcon';
 import { cn } from '../../utils/cn';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const PropertyCard = ({ property, tenants, onEdit, onDelete, onClick }) => {
+  const { t } = useTranslation();
   const propTenants = tenants.filter(t => t.propertyId === property.id && t.contractStatus === 'activo');
   const occupancyRate = property.totalRooms > 0 ? (propTenants.length / property.totalRooms) * 100 : 0;
   const monthlyIncome = propTenants.reduce((sum, t) => sum + t.rentAmount, 0);
@@ -50,10 +52,10 @@ const PropertyCard = ({ property, tenants, onEdit, onDelete, onClick }) => {
             </Button>
           </div>
           
-          {/* Isometric Building Visualization */}
+          {/* Icon Visualization */}
           <div className="absolute inset-0 flex items-center justify-center translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
             <div className="w-32 h-32 relative group-hover:scale-110 transition-transform duration-500 ease-out">
-              <IsometricBuilding color={theme} className="w-full h-full drop-shadow-2xl" />
+              <PropertyIcon color={theme} className="w-full h-full drop-shadow-2xl" />
             </div>
           </div>
 
@@ -65,7 +67,7 @@ const PropertyCard = ({ property, tenants, onEdit, onDelete, onClick }) => {
               occupancyRate > 0 ? "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800" :
               "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
             )}>
-              {occupancyRate === 100 ? 'Completo' : occupancyRate === 0 ? 'Vacío' : 'Parcial'}
+              {occupancyRate === 100 ? t('propertyCard.status.full') : occupancyRate === 0 ? t('propertyCard.status.empty') : t('propertyCard.status.partial')}
             </span>
           </div>
         </div>
@@ -78,14 +80,14 @@ const PropertyCard = ({ property, tenants, onEdit, onDelete, onClick }) => {
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
               <MapPin className="w-3 h-3" />
-              {property.city || 'Ubicación no especificada'}
+              {property.city || t('propertyCard.locationUnknown')}
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4 py-4 border-t border-gray-100 dark:border-gray-700 mt-auto">
             <div className="flex flex-col gap-1">
               <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                <Users className="w-3 h-3" /> Ocupación
+                <Users className="w-3 h-3" /> {t('propertyCard.occupancy')}
               </span>
               <div className="flex items-baseline gap-1">
                 <span className="text-lg font-bold text-gray-900 dark:text-white">
@@ -98,7 +100,7 @@ const PropertyCard = ({ property, tenants, onEdit, onDelete, onClick }) => {
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                <DollarSign className="w-3 h-3" /> Ingresos
+                <DollarSign className="w-3 h-3" /> {t('propertyCard.income')}
               </span>
               <span className={cn(
                 "text-lg font-bold",

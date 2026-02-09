@@ -1,0 +1,290 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "add": "Add",
+    "search": "Search",
+    "actions": "Actions",
+    "confirm": "Confirm",
+    "back": "Back",
+    "viewAll": "View all",
+    "edit": "Edit",
+    "download": "Download",
+    "payments": "Payments",
+    "report": "Report",
+    "admin": "Admin"
+  },
+  "forms": {
+    "tenant": {
+      "titleAdd": "Add Tenant",
+      "titleEdit": "Edit Tenant",
+      "name": "Full Name",
+      "dni": "ID / DNI",
+      "phone": "Primary Phone",
+      "room": "Room Number",
+      "rent": "Rent Amount",
+      "entryDate": "Entry Date",
+      "exitDate": "Exit Date (optional)",
+      "contractStatus": "Contract Status",
+      "emergencyPhones": "Emergency Contact Phones",
+      "addPhone": "Add",
+      "phonePlaceholder": "+1 555 123 4567",
+      "enterToAdd": "Press Enter or click Add to include a phone number"
+    },
+    "expense": {
+      "description": "Description",
+      "descriptionPlaceholder": "Ex: Pipe repair",
+      "property": "Property",
+      "selectProperty": "Select property...",
+      "category": "Category",
+      "amount": "Amount",
+      "amountPlaceholder": "Ex: 15000",
+      "date": "Date"
+    },
+    "property": {
+      "title": "Title",
+      "type": "Property Type",
+      "selectType": "Select type...",
+      "description": "Description",
+      "address": "Address",
+      "city": "City",
+      "totalRooms": "Total Rooms",
+      "roomsHelper": "Total rooms available for rent",
+      "insurance": "Insurance Details",
+      "insurancePlaceholder": "Company, policy number, expiration...",
+      "observations": "Observations",
+      "observationsPlaceholder": "Additional notes about the property..."
+    }
+  },
+  "propertyCard": {
+    "status": {
+      "full": "Full",
+      "empty": "Empty",
+      "partial": "Partial"
+    },
+    "locationUnknown": "Location unknown",
+    "occupancy": "Occupancy",
+    "income": "Income"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email",
+    "minLength": "Minimum {{min}} characters"
+  },
+  "propertyDetail": {
+    "notFound": "Property not found",
+    "backToDashboard": "Back to Dashboard",
+    "potentialIncome": "Potential Monthly Income",
+    "vacantRooms": "Vacant Rooms",
+    "totalExpenses": "Total Expenses",
+    "tenantsTitle": "Tenants",
+    "addTenant": "Add Tenant",
+    "editTenant": "Edit Tenant",
+    "noTenants": "No tenants registered in this property.",
+    "expensesTitle": "Expenses",
+    "addExpense": "Add Expense",
+    "noExpenses": "No expenses registered.",
+    "paymentsTitle": "Payments - {{name}}",
+    "deleteTenantTitle": "Delete Tenant",
+    "deleteTenantMessage": "Are you sure you want to delete tenant {{name}}?",
+    "table": {
+      "name": "Name",
+      "room": "Room",
+      "rent": "Rent",
+      "status": "Status",
+      "actions": "Actions",
+      "description": "Description",
+      "category": "Category",
+      "amount": "Amount",
+      "date": "Date"
+    },
+    "status": {
+      "active": "Active",
+      "finished": "Finished",
+      "upToDate": "Up to date",
+      "noPayments": "No payments",
+      "late": "Owes {{months}} months"
+    }
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "debtors": "Debtors",
+    "rooms": "Rooms",
+    "income": "Income",
+    "expenses": "Expenses",
+    "calendar": "Calendar",
+    "settings": "Settings",
+    "logout": "Logout",
+    "theme": "Toggle theme",
+    "menu": "Menu"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Overview of your properties and finances",
+    "monthlyReport": "Monthly Report",
+    "addProperty": "Add Property",
+    "editProperty": "Edit Property",
+    "deleteConfirmTitle": "Delete Property",
+    "deleteConfirmMessage": "Are you sure you want to delete {{address}}? This action cannot be undone.",
+    "properties": "Properties",
+    "financialSummary": "Financial Summary",
+    "analytics": "Analytics",
+    "revenueTrend": "Annual Financial Balance",
+    "expenseCategory": "Expenses by Category",
+    "occupancy": "Occupancy by Property",
+    "topIncome": "Top Income by Property",
+    "noProperties": "No properties registered",
+    "startAdding": "Start by adding your first property",
+    "noData": "No data available"
+  },
+  "stats": {
+    "income": "Monthly Income",
+    "expenses": "Monthly Expenses",
+    "tenants": "Active Tenants",
+    "debtors": "Debtors"
+  },
+  "debtors": {
+    "title": "Debtors",
+    "subtitle": "Management and tracking of outstanding payments",
+    "totalDebtors": "Total Debtors",
+    "totalDebt": "Estimated Total Debt",
+    "listTitle": "Debtors List",
+    "table": {
+      "name": "Name",
+      "phone": "Phone",
+      "room": "Room",
+      "monthsOwed": "Months Owed",
+      "estimatedDebt": "Estimated Debt",
+      "lastPayment": "Last Payment",
+      "months": "month(s)",
+      "never": "Never",
+      "empty": "No registered debtors."
+    }
+  },
+  "vacant": {
+    "title": "Vacant Rooms",
+    "totalVacant": "Total Vacant Rooms",
+    "occupancyRate": "General Occupancy",
+    "vacant": "vacant",
+    "occupied": "occupied"
+  },
+  "income": {
+    "title": "Monthly Income",
+    "annualReport": "Annual Report",
+    "thisMonth": "Income This Month",
+    "variation": "Variation vs Last Month",
+    "history": "Income History (last 12 months)",
+    "toastSuccess": "Annual report downloaded"
+  },
+  "expenses": {
+    "title": "Expenses",
+    "add": "Add Expense",
+    "total": "TOTAL EXPENSES",
+    "byCategory": "Expenses by Category",
+    "byProperty": "Expenses by Property",
+    "detail": "Expenses Detail",
+    "loadMore": "Load more expenses",
+    "table": {
+      "description": "DESCRIPTION",
+      "property": "PROPERTY",
+      "category": "CATEGORY",
+      "amount": "AMOUNT",
+      "date": "DATE",
+      "actions": "ACTIONS"
+    },
+    "deleteConfirm": {
+      "title": "Delete Expense",
+      "message": "Are you sure you want to delete this expense? This action cannot be undone."
+    }
+  },
+  "calendar": {
+    "title": "Payment Calendar",
+    "subtitle": "Payment and due date management",
+    "allProperties": "All properties",
+    "previous": "Previous",
+    "next": "Next",
+    "upcoming": "Upcoming Due Dates",
+    "noUpcoming": "No pending due dates",
+    "selectDay": "Select a day to view details",
+    "status": {
+      "overdue": "Overdue",
+      "dueToday": "Due Today",
+      "daysRemaining": "days remaining",
+      "upcoming": "Due soon (≤5 days)",
+      "upToDate": "Up to date"
+    },
+    "weekdays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  },
+  "settings": {
+    "title": "Settings & Data",
+    "subtitle": "Manage your backups and data exports",
+    "backup": {
+      "title": "Data Backups",
+      "desc": "Download a full copy of your database.",
+      "recommendation": "Important recommendation:",
+      "recText": "Perform a JSON backup at least once a month.",
+      "downloadJSON": "Download Full Backup (JSON)",
+      "downloadExcel": "Download Full Report (Excel)",
+      "note": "* JSON format is ideal for data restoration."
+    },
+    "restore": {
+      "title": "Data Restoration",
+      "desc": "To restore your data, please contact support."
+    },
+    "language": {
+      "title": "Language",
+      "desc": "Select application language"
+    }
+  },
+  "payments": {
+    "registerNew": "Register New Payment",
+    "baseAmount": "Base Amount",
+    "paymentDate": "Payment Date",
+    "dueDate": "Due Date",
+    "adjustments": "Adjustments (Optional)",
+    "noAdjustment": "No adjustment",
+    "surcharge": "Surcharge/Fee",
+    "discount": "Discount",
+    "amount": "Amount",
+    "reason": "Reason",
+    "base": "Base amount",
+    "totalToPay": "Total to pay",
+    "register": "Register Payment",
+    "history": "Payment History",
+    "noPayments": "No payments registered",
+    "receipt": "Receipt",
+    "loadMore": "Load more payments",
+    "deleteTitle": "Delete Payment",
+    "deleteMessage": "Are you sure you want to delete this payment? This action cannot be undone.",
+    "errorAmountZero": "Base amount must be greater than 0",
+    "errorAdjustmentZero": "Adjustment amount must be greater than 0",
+    "errorReasonRequired": "Adjustment reason is required"
+  },
+  "receipt": {
+    "title": "PAYMENT RECEIPT",
+    "subtitle": "Rental receipt",
+    "tenant": "Tenant",
+    "baseAmount": "Base amount",
+    "surcharge": "Surcharge/Fee",
+    "discount": "Discount",
+    "reason": "Reason",
+    "totalPaid": "Total Paid",
+    "paymentDate": "Payment Date",
+    "dueDate": "DUE DATE",
+    "footer": "This receipt certifies the rental payment",
+    "download": "Download",
+    "copy": "Copy",
+    "share": "Share",
+    "print": "Print",
+    "generating": "Generating...",
+    "back": "Back",
+    "imageCopied": "Image copied! Paste in WhatsApp Web with Ctrl+V",
+    "copyError": "Could not copy. Use \"Download\" instead.",
+    "shareError": "Your browser does not support sharing. Use \"Download\" or \"Copy\".",
+    "downloadError": "Error generating image"
+  }
+}

@@ -5,7 +5,10 @@ import { usePayments } from '../../hooks/usePayments';
 import { useProperties } from '../../hooks/useProperties';
 import { useNavigate } from 'react-router-dom';
 
+import { useTranslation } from 'react-i18next';
+
 const CalendarView = ({ user }) => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { tenants, loading: tenantsLoading } = useTenants(user?.uid);
   const { payments, loading: paymentsLoading } = usePayments(user?.uid);
@@ -111,7 +114,7 @@ const CalendarView = ({ user }) => {
     return days;
   }, [currentDate, vencimientos]);
 
-  const monthName = currentDate.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+  const monthName = currentDate.toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' });
 
   const changeMonth = (delta) => {
     const newDate = new Date(currentDate);
@@ -131,10 +134,10 @@ const CalendarView = ({ user }) => {
 
   const getStatusText = (vencimiento) => {
     if (vencimiento.isOverdue) {
-      return `Vencido (${Math.abs(vencimiento.daysUntilDue)} días)`;
+      return `${t('calendar.status.overdue')} (${Math.abs(vencimiento.daysUntilDue)} ${t('calendar.status.daysRemaining')})`;
     }
-    if (vencimiento.daysUntilDue === 0) return 'Vence Hoy';
-    return `${vencimiento.daysUntilDue} días restantes`;
+    if (vencimiento.daysUntilDue === 0) return t('calendar.status.dueToday');
+    return `${vencimiento.daysUntilDue} ${t('calendar.status.daysRemaining')}`;
   };
 
   const getStatusTextColor = (vencimiento) => {
@@ -165,10 +168,10 @@ const CalendarView = ({ user }) => {
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
               <CalendarIcon className="w-7 h-7 text-emerald-500" />
-              Calendario de Vencimientos
+              {t('calendar.title')}
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Gestión de cobros y vencimientos
+              {t('calendar.subtitle')}
             </p>
           </div>
         </div>
@@ -181,7 +184,7 @@ const CalendarView = ({ user }) => {
             onChange={e => setSelectedProperty(e.target.value)}
             className="bg-transparent border-none text-sm font-medium text-gray-700 dark:text-gray-300 outline-none cursor-pointer"
           >
-            <option value="all">Todas las propiedades</option>
+            <option value="all">{t('calendar.allProperties')}</option>
             {properties.map(prop => (
               <option key={prop.id} value={prop.id}>{prop.address}</option>
             ))}
@@ -197,7 +200,7 @@ const CalendarView = ({ user }) => {
             onClick={() => changeMonth(-1)}
             className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
-            <ChevronLeft className="w-4 h-4" /> Anterior
+            <ChevronLeft className="w-4 h-4" /> {t('calendar.previous')}
           </button>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white capitalize">
             {monthName}
@@ -206,7 +209,7 @@ const CalendarView = ({ user }) => {
             onClick={() => changeMonth(1)}
             className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
-            Siguiente <ChevronRight className="w-4 h-4" />
+            {t('calendar.next')} <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
@@ -214,7 +217,7 @@ const CalendarView = ({ user }) => {
         <div className="p-4">
           {/* Días de la semana */}
           <div className="grid grid-cols-7 gap-2 mb-2">
-            {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(day => (
+            {(t('calendar.weekdays', { returnObjects: true }) || []).map(day => (
               <div key={day} className="text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase py-2">
                 {day}
               </div>
@@ -278,13 +281,13 @@ const CalendarView = ({ user }) => {
         <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-lg p-6">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <CalendarIcon className="w-5 h-5 text-emerald-500" />
-            Próximos Vencimientos ({sortedVencimientos.length})
+            {t('calendar.upcoming')} ({sortedVencimientos.length})
           </h3>
           
           {sortedVencimientos.length === 0 ? (
             <div className="text-center py-12 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
               <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p>No hay vencimientos pendientes</p>
+              <p>{t('calendar.noUpcoming')}</p>
             </div>
           ) : (
             <div className="space-y-3 max-h-[400px] overflow-y-auto">
@@ -357,7 +360,7 @@ const CalendarView = ({ user }) => {
             <div className="bg-gray-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-6 flex flex-col items-center justify-center text-center min-h-[200px]">
               <CalendarIcon className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4" />
               <p className="text-gray-500 dark:text-gray-400">
-                Selecciona un día para ver los detalles
+                {t('calendar.selectDay')}
               </p>
             </div>
           )}
@@ -368,15 +371,15 @@ const CalendarView = ({ user }) => {
       <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500 dark:text-gray-400">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-red-500"></div>
-          <span>Vencido</span>
+          <span>{t('calendar.status.overdue')}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-          <span>Próximo a vencer (≤5 días)</span>
+          <span>{t('calendar.status.upcoming')}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-          <span>Al día</span>
+          <span>{t('calendar.status.upToDate')}</span>
         </div>
       </div>
     </div>

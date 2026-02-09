@@ -10,7 +10,8 @@ import {
   Moon, 
   LogOut,
   Menu,
-  X 
+  X,
+  Settings
 } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../firebase/config';
@@ -22,7 +23,10 @@ import { useNotifications } from '../../hooks/useNotifications';
 import { useTenants } from '../../hooks/useTenants';
 import { usePayments } from '../../hooks/usePayments';
 
+import { useTranslation } from 'react-i18next'; // Importar hook
+
 const Header = ({ user, theme, toggleTheme }) => {
+  const { t } = useTranslation(); // Hook de traducción
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
@@ -49,12 +53,13 @@ const Header = ({ user, theme, toggleTheme }) => {
 
   // Navigation Items Configuration
   const navItems = [
-    { name: 'Dashboard', icon: LayoutDashboard, path: '/' },
-    { name: 'Deudores', icon: AlertCircle, path: '/debtors' },
-    { name: 'Habitaciones', icon: Home, path: '/vacant' },
-    { name: 'Ingresos', icon: TrendingUp, path: '/income' },
-    { name: 'Gastos', icon: TrendingDown, path: '/expenses' },
-    { name: 'Calendario', icon: Calendar, path: '/calendar' }
+    { name: t('nav.dashboard'), icon: LayoutDashboard, path: '/' },
+    { name: t('nav.debtors'), icon: AlertCircle, path: '/debtors' },
+    { name: t('nav.rooms'), icon: Home, path: '/vacant' },
+    { name: t('nav.income'), icon: TrendingUp, path: '/income' },
+    { name: t('nav.expenses'), icon: TrendingDown, path: '/expenses' },
+    { name: t('nav.calendar'), icon: Calendar, path: '/calendar' },
+    { name: t('nav.settings'), icon: Settings, path: '/settings' }
   ];
 
   // Helper to check active state
@@ -81,7 +86,7 @@ const Header = ({ user, theme, toggleTheme }) => {
               <button 
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="xl:hidden p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
-                aria-label="Menu"
+                aria-label={t('nav.menu')}
               >
                 {mobileMenuOpen ? (
                   <X className="w-6 h-6" />
@@ -139,9 +144,9 @@ const Header = ({ user, theme, toggleTheme }) => {
                 {/* Texto: Visible solo en desktop grande (xl) */}
                 <div className="hidden xl:block text-sm">
                   <p className="font-medium text-gray-900 dark:text-gray-100 leading-none">
-                    {user?.email ? user.email.split('@')[0] : 'Admin'}
+                    {user?.email ? user.email.split('@')[0] : t('common.admin')}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Admin</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t('common.admin')}</p>
                 </div>
               </div>
               
@@ -149,7 +154,7 @@ const Header = ({ user, theme, toggleTheme }) => {
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 hover:rotate-12"
-                aria-label="Cambiar tema"
+                aria-label={t('nav.theme')}
               >
                 {theme === 'dark' ? (
                   <Moon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -162,10 +167,10 @@ const Header = ({ user, theme, toggleTheme }) => {
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 px-2 xl:px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors font-medium text-sm"
-                aria-label="Salir"
+                aria-label={t('nav.logout')}
               >
                 <LogOut className="w-4 h-4" />
-                <span className="hidden xl:inline">Salir</span>
+                <span className="hidden xl:inline">{t('nav.logout')}</span>
               </button>
               
             </div>

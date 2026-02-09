@@ -3,8 +3,10 @@ import { Download, Copy, Share2, Printer, Clock, ArrowLeft } from 'lucide-react'
 import toast from 'react-hot-toast';
 import Button from '../common/Button';
 import { logger } from '../../utils/logger';
+import { useTranslation } from 'react-i18next';
 
 const ReceiptGenerator = ({ payment, tenant, onClose }) => {
+  const { t } = useTranslation();
   const receiptRef = useRef();
   const [isSharing, setIsSharing] = useState(false);
   
@@ -37,7 +39,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
       link.click();
     } catch (error) {
       logger.error('Error al descargar:', error);
-      toast.error('Error al generar la imagen');
+      toast.error(t('receipt.downloadError'));
     }
   };
 
@@ -54,20 +56,20 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
           await navigator.clipboard.write([
             new ClipboardItem({ 'image/png': blob })
           ]);
-          toast.success('¡Imagen copiada! Pegá en WhatsApp Web con Ctrl+V');
+          toast.success(t('receipt.imageCopied'));
         } catch {
-          toast.error('No se pudo copiar. Usá "Descargar" en su lugar.');
+          toast.error(t('receipt.copyError'));
         }
       }, 'image/png', 1.0);
       
     } catch {
-      toast.error('Error al copiar la imagen');
+      toast.error(t('receipt.downloadError'));
     }
   };
 
   const handleShareWhatsApp = async () => {
     if (!navigator.share) {
-      toast.error('Tu navegador no soporta compartir. Usá "Descargar" o "Copiar".');
+      toast.error(t('receipt.shareError'));
       return;
     }
 
@@ -92,8 +94,8 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
 
             await navigator.share({
               files: [file],
-              title: 'Recibo de Pago',
-              text: `Recibo - ${tenant.name} - $${payment.amount.toLocaleString('es-AR')}`
+              title: t('receipt.title'),
+              text: `${t('receipt.title')} - ${tenant.name} - $${payment.amount.toLocaleString('es-AR')}`
             });
 
             console.log('Compartido exitosamente');
@@ -108,7 +110,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
             link.href = URL.createObjectURL(blob);
             link.click();
             URL.revokeObjectURL(link.href);
-            toast.error('No se pudo compartir. La imagen se descargó.');
+            toast.error(t('receipt.copyError'));
           }
         } finally {
           setIsSharing(false);
@@ -117,7 +119,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
 
     } catch (error) {
       logger.error('Error general:', error);
-      toast.error('Error al generar el recibo.');
+      toast.error(t('receipt.downloadError'));
       setIsSharing(false);
     }
   };
@@ -131,13 +133,13 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
         style={{ width: '600px', padding: '2rem', margin: '0 auto' }}
       >
         <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-900">RECIBO DE PAGO</h2>
-          <p className="text-gray-600 mt-2">Comprobante de alquiler</p>
+          <h2 className="text-3xl font-bold text-gray-900">{t('receipt.title')}</h2>
+          <p className="text-gray-600 mt-2">{t('receipt.subtitle')}</p>
         </div>
         
         <div className="border-t-2 border-b-2 border-gray-300 py-4 my-4">
           <div className="text-center">
-            <p className="text-sm text-gray-600 mb-2">Inquilino</p>
+            <p className="text-sm text-gray-600 mb-2">{t('receipt.tenant')}</p>
             <p className="font-bold text-2xl text-gray-900">{tenant.name}</p>
           </div>
         </div>
@@ -146,27 +148,27 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
         {payment.adjustmentType && (
           <div className="mb-4 p-4 bg-gray-50 rounded-lg">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-gray-700">Monto base:</span>
+              <span className="text-gray-700">{t('receipt.baseAmount')}:</span>
               <span className="font-semibold text-gray-900">
                 ${payment.baseAmount.toLocaleString('es-AR')}
               </span>
             </div>
             <div className="flex justify-between items-center mb-2">
               <span className={payment.adjustmentType === 'surcharge' ? 'text-red-600' : 'text-green-600'}>
-                {payment.adjustmentType === 'surcharge' ? 'Multa/Cargo:' : 'Descuento:'}
+                {payment.adjustmentType === 'surcharge' ? t('receipt.surcharge') : t('receipt.discount')}:
               </span>
               <span className={payment.adjustmentType === 'surcharge' ? 'text-red-600' : 'text-green-600'}>
                 {payment.adjustmentType === 'surcharge' ? '+' : '-'}${payment.adjustment.toLocaleString('es-AR')}
               </span>
             </div>
             {payment.adjustmentReason && (
-              <p className="text-xs text-gray-600 italic mt-2">Motivo: {payment.adjustmentReason}</p>
+              <p className="text-xs text-gray-600 italic mt-2">{t('receipt.reason')}: {payment.adjustmentReason}</p>
             )}
           </div>
         )}
 
         <div className="my-6 text-center bg-green-50 p-6 rounded-lg">
-          <p className="text-gray-600 mb-2">Total Pagado</p>
+          <p className="text-gray-600 mb-2">{t('receipt.totalPaid')}</p>
           <p className="text-4xl md:text-5xl font-bold text-green-600 px-2">
             ${payment.amount.toLocaleString('es-AR')}
           </p>
@@ -174,34 +176,26 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
 
         <div className="mb-6">
           <div className="text-center">
-            <p className="text-sm text-gray-600">Fecha de Pago</p>
+            <p className="text-sm text-gray-600">{t('receipt.paymentDate')}</p>
             <p className="font-bold text-lg text-gray-800">
-              {new Date(payment.date).toLocaleDateString('es-AR', { 
-                day: 'numeric', 
-                month: 'long', 
-                year: 'numeric' 
-              })}
+              {new Date(payment.date).toLocaleDateString('es-AR')}
             </p>
           </div>
         </div>
 
         <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 mb-6">
           <div className="text-center">
-            <p className="text-sm text-yellow-800 font-medium mb-1">FECHA DE VENCIMIENTO</p>
+            <p className="text-sm text-yellow-800 font-medium mb-1">{t('receipt.dueDate')}</p>
             <p className="text-2xl font-bold text-yellow-900">
               {payment.dueDate
-                ? new Date(payment.dueDate).toLocaleDateString('es-AR', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                  })
+                ? new Date(payment.dueDate).toLocaleDateString('es-AR')
                 : '—'}
             </p>
           </div>
         </div>
 
         <div className="border-t-2 border-gray-300 pt-4 text-center text-sm text-gray-600">
-          <p>Este recibo certifica el pago del alquiler</p>
+          <p>{t('receipt.footer')}</p>
         </div>
       </div>
 
@@ -212,7 +206,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
           className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-600 dark:hover:bg-blue-700 shadow-none"
           icon={<Download className="w-5 h-5" />}
         >
-          <span className="hidden sm:inline">Descargar</span>
+          <span className="hidden sm:inline">{t('receipt.download')}</span>
         </Button>
         
         <Button 
@@ -220,7 +214,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
           className="bg-purple-600 hover:bg-purple-700 text-white dark:bg-purple-600 dark:hover:bg-purple-700 shadow-none"
           icon={<Copy className="w-5 h-5" />}
         >
-          <span className="hidden sm:inline">Copiar</span>
+          <span className="hidden sm:inline">{t('receipt.copy')}</span>
         </Button>
         
         <Button 
@@ -229,7 +223,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
           className="bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700 shadow-none"
           icon={isSharing ? <Clock className="w-5 h-5 animate-spin" /> : <Share2 className="w-5 h-5" />}
         >
-          <span className="hidden sm:inline">{isSharing ? 'Generando...' : 'Compartir'}</span>
+          <span className="hidden sm:inline">{isSharing ? t('receipt.generating') : t('receipt.share')}</span>
         </Button>
         
         <Button 
@@ -237,7 +231,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
           className="bg-gray-600 hover:bg-gray-700 text-white dark:bg-gray-600 dark:hover:bg-gray-700 shadow-none"
           icon={<Printer className="w-5 h-5" />}
         >
-          <span className="hidden sm:inline">Imprimir</span>
+          <span className="hidden sm:inline">{t('receipt.print')}</span>
         </Button>
       </div>
 
@@ -247,7 +241,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
         className="w-full print:hidden"
         icon={<ArrowLeft className="w-4 h-4" />}
       >
-        Volver
+        {t('receipt.back')}
       </Button>
     </div>
   );

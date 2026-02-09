@@ -5,8 +5,10 @@ import { tenantSchema } from '../../schemas/tenantSchema';
 import Button from '../common/Button';
 import { Plus, Trash2 } from 'lucide-react';
 import { getTodayFormatted } from '../../utils/dateUtils';
+import { useTranslation } from 'react-i18next';
 
 const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
+  const { t } = useTranslation();
   const [newEmergencyPhone, setNewEmergencyPhone] = useState('');
 
   const {
@@ -83,7 +85,7 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Nombre Completo <span className="text-rose-500">*</span>
+            {t('forms.tenant.name')} <span className="text-rose-500">*</span>
           </label>
           <input
             type="text"
@@ -93,16 +95,16 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
                 ? 'border-rose-500 focus:ring-rose-500' 
                 : 'border-gray-200 dark:border-gray-700 focus:ring-emerald-500'
             } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:border-transparent outline-none transition-all`}
-            placeholder="Juan Pérez"
+            placeholder={t('forms.tenant.name')}
           />
           {errors.name && (
-            <p className="text-sm text-rose-500 mt-1">{errors.name.message}</p>
+            <p className="text-sm text-rose-500 mt-1">{t('validation.required')}</p>
           )}
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            DNI <span className="text-rose-500">*</span>
+            {t('forms.tenant.dni')} <span className="text-rose-500">*</span>
           </label>
           <input
             type="text"
@@ -115,14 +117,14 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
             placeholder="12345678"
           />
           {errors.dni && (
-            <p className="text-sm text-rose-500 mt-1">{errors.dni.message}</p>
+            <p className="text-sm text-rose-500 mt-1">{t('validation.required')}</p>
           )}
         </div>
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Teléfono Principal <span className="text-rose-500">*</span>
+          {t('forms.tenant.phone')} <span className="text-rose-500">*</span>
         </label>
         <input
           type="tel"
@@ -132,17 +134,17 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
               ? 'border-rose-500 focus:ring-rose-500' 
               : 'border-gray-200 dark:border-gray-700 focus:ring-emerald-500'
           } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:border-transparent outline-none transition-all`}
-          placeholder="+54 9 11 1234-5678"
+          placeholder={t('forms.tenant.phonePlaceholder')}
         />
         {errors.phone && (
-          <p className="text-sm text-rose-500 mt-1">{errors.phone.message}</p>
+          <p className="text-sm text-rose-500 mt-1">{t('validation.required')}</p>
         )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Número de Habitación <span className="text-rose-500">*</span>
+            {t('forms.tenant.room')} <span className="text-rose-500">*</span>
           </label>
           <input
             type="text"
@@ -155,13 +157,13 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
             placeholder="12"
           />
           {errors.roomNumber && (
-            <p className="text-sm text-rose-500 mt-1">{errors.roomNumber.message}</p>
+            <p className="text-sm text-rose-500 mt-1">{t('validation.required')}</p>
           )}
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Monto de Alquiler <span className="text-rose-500">*</span>
+            {t('forms.tenant.rent')} <span className="text-rose-500">*</span>
           </label>
           <input
             type="number"
@@ -174,7 +176,7 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
             placeholder="70000"
           />
           {errors.rentAmount && (
-            <p className="text-sm text-rose-500 mt-1">{errors.rentAmount.message}</p>
+            <p className="text-sm text-rose-500 mt-1">{t('validation.required')}</p>
           )}
         </div>
       </div>
@@ -182,7 +184,7 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Fecha de Entrada <span className="text-rose-500">*</span>
+            {t('forms.tenant.entryDate')} <span className="text-rose-500">*</span>
           </label>
           <input
             type="date"
@@ -194,13 +196,13 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
             } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:border-transparent outline-none transition-all`}
           />
           {errors.entryDate && (
-            <p className="text-sm text-rose-500 mt-1">{errors.entryDate.message}</p>
+            <p className="text-sm text-rose-500 mt-1">{t('validation.required')}</p>
           )}
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Fecha de Salida (opcional)
+            {t('forms.tenant.exitDate')}
           </label>
           <input
             type="date"
@@ -212,20 +214,20 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Estado del Contrato <span className="text-rose-500">*</span>
+          {t('forms.tenant.contractStatus')} <span className="text-rose-500">*</span>
         </label>
         <select
           {...register('contractStatus')}
           className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
         >
-          <option value="activo">Activo</option>
-          <option value="finalizado">Finalizado</option>
+          <option value="activo">{t('propertyDetail.status.active')}</option>
+          <option value="finalizado">{t('propertyDetail.status.finished')}</option>
         </select>
       </div>
 
       <div className="border-t border-gray-200 dark:border-gray-700 pt-5">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-          Teléfonos de Contacto de Emergencia
+          {t('forms.tenant.emergencyPhones')}
         </label>
 
         {fields.length > 0 && (
@@ -264,7 +266,7 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
                 handleAddEmergencyPhone(e);
               }
             }}
-            placeholder="+54 9 11 8765-4321"
+            placeholder={t('forms.tenant.phonePlaceholder')}
             className="flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
           />
           <Button
@@ -273,12 +275,12 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
             icon={<Plus className="w-4 h-4" />}
             onClick={handleAddEmergencyPhone}
           >
-            Agregar
+            {t('forms.tenant.addPhone')}
           </Button>
         </div>
         
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-          Presiona Enter o click en "Agregar" para añadir un teléfono
+          {t('forms.tenant.enterToAdd')}
         </p>
       </div>
 
@@ -292,7 +294,7 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
           variant="secondary"
           className="flex-1"
         >
-          Cancelar
+          {t('common.cancel')}
         </Button>
         <Button
           type="submit"
@@ -300,7 +302,7 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
           className="flex-1"
           disabled={isSubmitting}
         >
-          {tenant ? 'Guardar Cambios' : 'Agregar Inquilino'}
+          {tenant ? t('common.save') : t('forms.tenant.titleAdd')}
         </Button>
       </div>
     </form>

@@ -26,7 +26,10 @@ import { usePayments } from '../../hooks/usePayments';
 import { useExpenses } from '../../hooks/useExpenses';
 import { logger } from '../../utils/logger';
 
+import { useTranslation } from 'react-i18next';
+
 const PropertyDetail = ({ user }) => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -192,9 +195,9 @@ const PropertyDetail = ({ user }) => {
   if (!property) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-xl font-semibold text-foreground mb-4">Propiedad no encontrada</h2>
+        <h2 className="text-xl font-semibold text-foreground mb-4">{t('propertyDetail.notFound')}</h2>
         <Button onClick={() => navigate('/')} variant="default">
-          Volver al Dashboard
+          {t('propertyDetail.backToDashboard')}
         </Button>
       </div>
     );
@@ -218,19 +221,19 @@ const PropertyDetail = ({ user }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard3D
-          title="Ingreso Mensual Potencial"
+          title={t('propertyDetail.potentialIncome')}
           value={`$${totalMonthlyIncome.toLocaleString('es-AR')}`}
           icon={<DollarSign />}
           colorClass="green"
         />
         <StatCard3D
-          title="Habitaciones Vacías"
+          title={t('propertyDetail.vacantRooms')}
           value={vacantRooms}
           icon={<Home />}
           colorClass="blue"
         />
         <StatCard3D
-          title="Gastos Totales"
+          title={t('propertyDetail.totalExpenses')}
           value={`$${totalExpensesAmount.toLocaleString('es-AR')}`}
           icon={<TrendingDown />}
           colorClass="red"
@@ -240,13 +243,13 @@ const PropertyDetail = ({ user }) => {
       {/* TABLA DE INQUILINOS */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Inquilinos</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('propertyDetail.tenantsTitle')}</h2>
           <Button 
             variant="default"
             onClick={() => { setEditingTenant(null); setModalOpen(true); }}
           >
             <Plus className="w-4 h-4 mr-2" />
-            Agregar Inquilino
+            {t('propertyDetail.addTenant')}
           </Button>
         </div>
 
@@ -254,13 +257,13 @@ const PropertyDetail = ({ user }) => {
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent border-b border-gray-200 dark:border-gray-700">
-                <TableHead className="text-gray-500 dark:text-gray-400">Nombre</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">{t('propertyDetail.table.name')}</TableHead>
                 <TableHead 
                   onClick={() => handleSort('room')}
                   className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors select-none text-gray-500 dark:text-gray-400"
                 >
                   <div className="flex items-center gap-1">
-                    Habitación
+                    {t('propertyDetail.table.room')}
                     {sortConfig.key === 'room' && (
                       <span className="text-emerald-600 dark:text-emerald-400">
                         {sortConfig.direction === 'asc' ? '↑' : '↓'}
@@ -273,7 +276,7 @@ const PropertyDetail = ({ user }) => {
                   className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors select-none text-gray-500 dark:text-gray-400"
                 >
                   <div className="flex items-center gap-1">
-                    Alquiler
+                    {t('propertyDetail.table.rent')}
                     {sortConfig.key === 'rent' && (
                       <span className="text-emerald-600 dark:text-emerald-400">
                         {sortConfig.direction === 'asc' ? '↑' : '↓'}
@@ -286,7 +289,7 @@ const PropertyDetail = ({ user }) => {
                   className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors select-none text-gray-500 dark:text-gray-400"
                 >
                   <div className="flex items-center gap-1">
-                    Estado
+                    {t('propertyDetail.table.status')}
                     {sortConfig.key === 'status' && (
                       <span className="text-emerald-600 dark:text-emerald-400">
                         {sortConfig.direction === 'asc' ? '↑' : '↓'}
@@ -294,7 +297,7 @@ const PropertyDetail = ({ user }) => {
                     )}
                   </div>
                 </TableHead>
-                <TableHead className="text-gray-500 dark:text-gray-400">Acciones</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">{t('propertyDetail.table.actions')}</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -302,7 +305,7 @@ const PropertyDetail = ({ user }) => {
             {propTenants.length === 0 ? (
               <TableRow className="border-0">
                 <TableCell colSpan={5} className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  No hay inquilinos registrados en esta propiedad.
+                  {t('propertyDetail.noTenants')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -333,11 +336,11 @@ const PropertyDetail = ({ user }) => {
                       >
                         {tenant.contractStatus === 'activo'
                           ? paymentStatus.status === 'upToDate'
-                            ? 'Al día'
+                            ? t('propertyDetail.status.upToDate')
                             : paymentStatus.status === 'noPayments'
-                              ? 'Sin pagos'
-                              : `Debe ${paymentStatus.months} meses`
-                          : 'Finalizado'}
+                              ? t('propertyDetail.status.noPayments')
+                              : t('propertyDetail.status.late', { months: paymentStatus.months })
+                          : t('propertyDetail.status.finished')}
                       </span>
                     </TableCell>
                     <TableCell>
@@ -347,7 +350,7 @@ const PropertyDetail = ({ user }) => {
                           size="sm"
                           onClick={() => handlePaymentClick(tenant)}
                         >
-                          Pagos
+                          {t('common.payments')}
                         </Button>
 
                         <Button 
@@ -392,13 +395,13 @@ const PropertyDetail = ({ user }) => {
       {/* TABLA DE GASTOS */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Gastos</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('propertyDetail.expensesTitle')}</h2>
           <Button 
             variant="default"
             onClick={() => setExpenseModalOpen(true)}
           >
             <Plus className="w-4 h-4 mr-2" />
-            Agregar Gasto
+            {t('propertyDetail.addExpense')}
           </Button>
         </div>
 
@@ -406,18 +409,18 @@ const PropertyDetail = ({ user }) => {
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent border-b border-gray-200 dark:border-gray-700">
-                <TableHead className="text-gray-500 dark:text-gray-400">Descripción</TableHead>
-                <TableHead className="text-gray-500 dark:text-gray-400">Categoría</TableHead>
-                <TableHead className="text-gray-500 dark:text-gray-400">Monto</TableHead>
-                <TableHead className="text-gray-500 dark:text-gray-400">Fecha</TableHead>
-                <TableHead className="text-gray-500 dark:text-gray-400">Acciones</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">{t('propertyDetail.table.description')}</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">{t('propertyDetail.table.category')}</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">{t('propertyDetail.table.amount')}</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">{t('propertyDetail.table.date')}</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">{t('propertyDetail.table.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {propExpenses.length === 0 ? (
                 <TableRow className="border-0">
                   <TableCell colSpan={5} className="text-center py-8 text-gray-500 dark:text-gray-400">
-                    No hay gastos registrados.
+                    {t('propertyDetail.noExpenses')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -458,7 +461,7 @@ const PropertyDetail = ({ user }) => {
             onClick={loadMoreExpenses}
             disabled={loadingMoreExpenses}
           >
-            {loadingMoreExpenses ? 'Cargando...' : 'Cargar más gastos'}
+            {loadingMoreExpenses ? t('common.loading') : t('expenses.loadMore')}
           </Button>
         </div>
       )}
@@ -466,7 +469,7 @@ const PropertyDetail = ({ user }) => {
       <Modal 
         isOpen={modalOpen} 
         onClose={() => { setModalOpen(false); setEditingTenant(null); }} 
-        title={editingTenant ? 'Editar Inquilino' : 'Agregar Inquilino'}
+        title={editingTenant ? t('propertyDetail.editTenant') : t('propertyDetail.addTenant')}
       >
         <TenantForm 
           tenant={editingTenant} 
@@ -479,7 +482,7 @@ const PropertyDetail = ({ user }) => {
       <Modal 
         isOpen={paymentsModalOpen} 
         onClose={() => { setPaymentsModalOpen(false); setSelectedTenant(null); }} 
-        title={`Pagos - ${selectedTenant?.name}`}
+        title={t('propertyDetail.paymentsTitle', { name: selectedTenant?.name })}
         size="lg"
       >
         {selectedTenant && (
@@ -490,12 +493,7 @@ const PropertyDetail = ({ user }) => {
               onClose={() => { setPaymentsModalOpen(false); setSelectedTenant(null); }} 
             />
             
-            {/* Sección de documentos */}
-            <DocumentUploader 
-              userId={user?.uid}
-              tenantId={selectedTenant.id}
-              tenantName={selectedTenant.name}
-            />
+
           </div>
         )}
       </Modal>
@@ -503,7 +501,7 @@ const PropertyDetail = ({ user }) => {
       <Modal 
         isOpen={expenseModalOpen} 
         onClose={() => setExpenseModalOpen(false)} 
-        title="Agregar Gasto"
+        title={t('propertyDetail.addExpense')}
       >
         <ExpenseForm 
           propertyId={property.id} 
@@ -516,7 +514,7 @@ const PropertyDetail = ({ user }) => {
         isOpen={confirmModalOpen}
         onClose={() => { setConfirmModalOpen(false); setItemToDelete(null); }}
         onConfirm={itemToDelete?.name ? handleDeleteTenant : handleDeleteExpense}
-        message={itemToDelete?.name ? `¿Estás seguro de eliminar al inquilino ${itemToDelete.name}?` : '¿Estás seguro de eliminar este gasto?'}
+        message={itemToDelete?.name ? t('propertyDetail.deleteTenantMessage', { name: itemToDelete.name }) : t('expenses.deleteConfirm.message')}
         isLoading={isDeleting}
       />
     </div>

@@ -11,7 +11,7 @@ describe('paymentUtils', () => {
   });
 
   describe('getTenantPaymentStatus', () => {
-    it('returns upToDate if no payments but still in first period', () => {
+    it('returns noPayments if no payments but still in first period', () => {
       const today = new Date('2023-10-15');
       vi.setSystemTime(today);
 
@@ -22,7 +22,7 @@ describe('paymentUtils', () => {
       const payments = [];
       
       const status = getTenantPaymentStatus(tenant, payments);
-      expect(status.status).toBe('upToDate');
+      expect(status.status).toBe('noPayments'); // No payments yet, in first period
       expect(status.months).toBe(0);
     });
 

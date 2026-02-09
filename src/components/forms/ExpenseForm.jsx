@@ -7,8 +7,10 @@ import { addTimeToDate } from '../../utils/dateUtils';
 import Input from '../common/Input';
 import Button from '../common/Button';
 import { Calendar, DollarSign, FileText, Home, Tag } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const ExpenseForm = ({ expense, propertyId, properties, onSave, onCancel }) => {
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -57,12 +59,11 @@ const ExpenseForm = ({ expense, propertyId, properties, onSave, onCancel }) => {
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
       {/* Descripción */}
-      {/* Descripción */}
       <Input
-        label="Descripción"
+        label={t('forms.expense.description')}
         {...register('description')}
-        error={errors.description?.message}
-        placeholder="Ej: Reparación de cañería"
+        error={errors.description?.message && t('validation.required')}
+        placeholder={t('forms.expense.descriptionPlaceholder')}
         icon={FileText}
       />
       
@@ -71,7 +72,7 @@ const ExpenseForm = ({ expense, propertyId, properties, onSave, onCancel }) => {
         {!propertyId && properties && (
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Propiedad *
+              {t('forms.expense.property')} *
             </label>
             <div className="relative">
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -81,14 +82,14 @@ const ExpenseForm = ({ expense, propertyId, properties, onSave, onCancel }) => {
                 {...register('propertyId')}
                 className={`w-full pl-10 pr-4 py-2 h-12 bg-white dark:bg-gray-900 border ${errors.propertyId ? 'border-rose-500' : 'border-gray-200 dark:border-gray-700'} rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all appearance-none`}
               >
-                <option value="">Seleccionar propiedad...</option>
+                <option value="">{t('forms.expense.selectProperty')}</option>
                 {properties.map(prop => (
                   <option key={prop.id} value={prop.id}>{prop.address}</option>
                 ))}
               </select>
             </div>
             {errors.propertyId && (
-              <p className="text-rose-500 text-xs mt-1">{errors.propertyId.message}</p>
+              <p className="text-rose-500 text-xs mt-1">{t('validation.required')}</p>
             )}
           </div>
         )}
@@ -96,7 +97,7 @@ const ExpenseForm = ({ expense, propertyId, properties, onSave, onCancel }) => {
         {/* Categoría */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Categoría
+            {t('forms.expense.category')}
           </label>
           <div className="relative">
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -115,21 +116,21 @@ const ExpenseForm = ({ expense, propertyId, properties, onSave, onCancel }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Monto */}
         <Input
-          label="Monto"
+          label={t('forms.expense.amount')}
           type="number"
           {...register('amount', { valueAsNumber: true })}
-          error={errors.amount?.message}
-          placeholder="Ej: 15000"
+          error={errors.amount?.message && t('validation.required')}
+          placeholder={t('forms.expense.amountPlaceholder')}
           min="1"
           icon={DollarSign}
         />
 
         {/* Fecha */}
         <Input
-          label="Fecha"
+          label={t('forms.expense.date')}
           type="date"
           {...register('date')}
-          error={errors.date?.message}
+          error={errors.date?.message && t('validation.required')}
           icon={Calendar}
         />
       </div>
@@ -143,14 +144,14 @@ const ExpenseForm = ({ expense, propertyId, properties, onSave, onCancel }) => {
             onCancel();
           }}
         >
-          Cancelar
+          {t('common.cancel')}
         </Button>
         <Button 
           type="submit" 
           isLoading={isSubmitting}
           variant="primary"
         >
-          Guardar
+          {t('common.save')}
         </Button>
       </div>
     </form>

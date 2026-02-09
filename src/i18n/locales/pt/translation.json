@@ -1,0 +1,290 @@
+{
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "add": "Adicionar",
+    "search": "Buscar",
+    "actions": "Ações",
+    "confirm": "Confirmar",
+    "back": "Voltar",
+    "viewAll": "Ver todas",
+    "edit": "Editar",
+    "download": "Baixar",
+    "payments": "Pagamentos",
+    "report": "Relatório",
+    "admin": "Admin"
+  },
+  "forms": {
+    "tenant": {
+      "titleAdd": "Adicionar Inquilino",
+      "titleEdit": "Editar Inquilino",
+      "name": "Nome Completo",
+      "dni": "CPF / RG",
+      "phone": "Telefone Principal",
+      "room": "Número do Quarto",
+      "rent": "Valor do Aluguel",
+      "entryDate": "Data de Entrada",
+      "exitDate": "Data de Saída (opcional)",
+      "contractStatus": "Status do Contrato",
+      "emergencyPhones": "Telefones de Emergência",
+      "addPhone": "Adicionar",
+      "phonePlaceholder": "+55 11 91234-5678",
+      "enterToAdd": "Pressione Enter ou clique em Adicionar"
+    },
+    "expense": {
+      "description": "Descrição",
+      "descriptionPlaceholder": "Ex: Reparo de encanamento",
+      "property": "Propriedade",
+      "selectProperty": "Selecionar propriedade...",
+      "category": "Categoria",
+      "amount": "Valor",
+      "amountPlaceholder": "Ex: 15000",
+      "date": "Data"
+    },
+    "property": {
+      "title": "Título",
+      "type": "Tipo de Propriedade",
+      "selectType": "Selecionar tipo...",
+      "description": "Descrição",
+      "address": "Endereço",
+      "city": "Cidade",
+      "totalRooms": "Total de Quartos",
+      "roomsHelper": "Total de quartos disponíveis para alugar",
+      "insurance": "Detalhes do Seguro",
+      "insurancePlaceholder": "Seguradora, número da apólice, vencimento...",
+      "observations": "Observações",
+      "observationsPlaceholder": "Notas adicionais sobre a propriedade..."
+    }
+  },
+  "propertyCard": {
+    "status": {
+      "full": "Completo",
+      "empty": "Vazio",
+      "partial": "Parcial"
+    },
+    "locationUnknown": "Localização desconhecida",
+    "occupancy": "Ocupação",
+    "income": "Renda"
+  },
+  "validation": {
+    "required": "Campo obrigatório",
+    "invalidEmail": "Email inválido",
+    "minLength": "Mínimo {{min}} caracteres"
+  },
+  "propertyDetail": {
+    "notFound": "Propriedade não encontrada",
+    "backToDashboard": "Voltar ao Painel",
+    "potentialIncome": "Receita Mensal Potencial",
+    "vacantRooms": "Quartos Vagos",
+    "totalExpenses": "Despesas Totais",
+    "tenantsTitle": "Inquilinos",
+    "addTenant": "Adicionar Inquilino",
+    "editTenant": "Editar Inquilino",
+    "noTenants": "Nenhum inquilino registrado nesta propriedade.",
+    "expensesTitle": "Despesas",
+    "addExpense": "Adicionar Despesa",
+    "noExpenses": "Nenhuma despesa registrada.",
+    "paymentsTitle": "Pagamentos - {{name}}",
+    "deleteTenantTitle": "Excluir Inquilino",
+    "deleteTenantMessage": "Tem certeza que deseja excluir o inquilino {{name}}?",
+    "table": {
+      "name": "Nome",
+      "room": "Quarto",
+      "rent": "Aluguel",
+      "status": "Status",
+      "actions": "Ações",
+      "description": "Descrição",
+      "category": "Categoria",
+      "amount": "Valor",
+      "date": "Data"
+    },
+    "status": {
+      "active": "Ativo",
+      "finished": "Finalizado",
+      "upToDate": "Em dia",
+      "noPayments": "Sem pagamentos",
+      "late": "Deve {{months}} meses"
+    }
+  },
+  "nav": {
+    "dashboard": "Painel",
+    "debtors": "Devedores",
+    "rooms": "Quartos",
+    "income": "Receitas",
+    "expenses": "Despesas",
+    "calendar": "Calendário",
+    "settings": "Configurações",
+    "logout": "Sair",
+    "theme": "Mudar tema",
+    "menu": "Menu"
+  },
+  "dashboard": {
+    "title": "Painel de Controle",
+    "subtitle": "Visão geral das suas propriedades e finanças",
+    "monthlyReport": "Relatório Mensal",
+    "addProperty": "Adicionar Propriedade",
+    "editProperty": "Editar Propriedade",
+    "deleteConfirmTitle": "Excluir Propriedade",
+    "deleteConfirmMessage": "Tem certeza que deseja excluir a propriedade {{address}}? Esta ação não pode ser desfeita.",
+    "properties": "Propriedades",
+    "financialSummary": "Resumo Financeiro",
+    "analytics": "Analytics",
+    "revenueTrend": "Balanço Financeiro Anual",
+    "expenseCategory": "Despesas por Categoria",
+    "occupancy": "Ocupação por Propriedade",
+    "topIncome": "Top Receitas por Propriedade",
+    "noProperties": "Nenhuma propriedade registrada",
+    "startAdding": "Comece adicionando sua primeira propriedade",
+    "noData": "Sem dados disponíveis"
+  },
+  "stats": {
+    "income": "Receita Mensal",
+    "expenses": "Despesas Mensais",
+    "tenants": "Inquilinos Ativos",
+    "debtors": "Devedores"
+  },
+  "debtors": {
+    "title": "Devedores",
+    "subtitle": "Gestão e acompanhamento de pagamentos pendentes",
+    "totalDebtors": "Total de Devedores",
+    "totalDebt": "Dívida Total Estimada",
+    "listTitle": "Lista de Devedores",
+    "table": {
+      "name": "Nome",
+      "phone": "Telefone",
+      "room": "Quarto",
+      "monthsOwed": "Meses em Atraso",
+      "estimatedDebt": "Dívida Estimada",
+      "lastPayment": "Último Pagamento",
+      "months": "mês(es)",
+      "never": "Nunca",
+      "empty": "Não há devedores registrados."
+    }
+  },
+  "vacant": {
+    "title": "Quartos Vagos",
+    "totalVacant": "Total de Quartos Vagos",
+    "occupancyRate": "Ocupação Geral",
+    "vacant": "vagos",
+    "occupied": "ocupado"
+  },
+  "income": {
+    "title": "Receita Mensal",
+    "annualReport": "Relatório Anual",
+    "thisMonth": "Receita Este Mês",
+    "variation": "Variação vs Mês Anterior",
+    "history": "Histórico de Receita (últimos 12 meses)",
+    "toastSuccess": "Relatório anual baixado"
+  },
+  "expenses": {
+    "title": "Despesas",
+    "add": "Adicionar Despesa",
+    "total": "DESPESAS TOTAIS",
+    "byCategory": "Despesas por Categoria",
+    "byProperty": "Despesas por Propriedade",
+    "detail": "Detalhe de Despesas",
+    "loadMore": "Carregar mais despesas",
+    "table": {
+      "description": "DESCRIÇÃO",
+      "property": "PROPRIEDADE",
+      "category": "CATEGORIA",
+      "amount": "VALOR",
+      "date": "DATA",
+      "actions": "AÇÕES"
+    },
+    "deleteConfirm": {
+      "title": "Excluir Despesa",
+      "message": "Tem certeza que deseja excluir esta despesa? Esta ação não pode ser desfeita."
+    }
+  },
+  "calendar": {
+    "title": "Calendário de Pagamentos",
+    "subtitle": "Gestão de cobranças e vencimentos",
+    "allProperties": "Todas as propriedades",
+    "previous": "Anterior",
+    "next": "Próximo",
+    "upcoming": "Próximos Vencimentos",
+    "noUpcoming": "Sem vencimentos pendentes",
+    "selectDay": "Selecione um dia para ver os detalhes",
+    "status": {
+      "overdue": "Vencido",
+      "dueToday": "Vence Hoje",
+      "daysRemaining": "dias restantes",
+      "upcoming": "Vence em breve (≤5 dias)",
+      "upToDate": "Em dia"
+    },
+    "weekdays": ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
+  },
+  "settings": {
+    "title": "Configurações e Dados",
+    "subtitle": "Gerencie seus backups e exportações de dados",
+    "backup": {
+      "title": "Backups de Dados",
+      "desc": "Baixe uma cópia completa do seu banco de dados.",
+      "recommendation": "Recomendação importante:",
+      "recText": "Faça um backup JSON pelo menos uma vez por mês.",
+      "downloadJSON": "Baixar Backup Completo (JSON)",
+      "downloadExcel": "Baixar Relatório Completo (Excel)",
+      "note": "* O formato JSON é ideal para restauração de dados."
+    },
+    "restore": {
+      "title": "Restauração de Dados",
+      "desc": "Para restaurar seus dados, entre em contato com o suporte."
+    },
+    "language": {
+      "title": "Idioma",
+      "desc": "Selecione o idioma do aplicativo"
+    }
+  },
+  "payments": {
+    "registerNew": "Registrar Novo Pagamento",
+    "baseAmount": "Valor Base",
+    "paymentDate": "Data do Pagamento",
+    "dueDate": "Data de Vencimento",
+    "adjustments": "Ajustes (Opcional)",
+    "noAdjustment": "Sem ajuste",
+    "surcharge": "Multa/Taxa",
+    "discount": "Desconto",
+    "amount": "Valor",
+    "reason": "Motivo",
+    "base": "Valor base",
+    "totalToPay": "Total a pagar",
+    "register": "Registrar Pagamento",
+    "history": "Histórico de Pagamentos",
+    "noPayments": "Nenhum pagamento registrado",
+    "receipt": "Recibo",
+    "loadMore": "Carregar mais pagamentos",
+    "deleteTitle": "Excluir Pagamento",
+    "deleteMessage": "Tem certeza que deseja excluir este pagamento? Esta ação não pode ser desfeita.",
+    "errorAmountZero": "O valor base deve ser maior que 0",
+    "errorAdjustmentZero": "O valor do ajuste deve ser maior que 0",
+    "errorReasonRequired": "É necessário indicar o motivo do ajuste"
+  },
+  "receipt": {
+    "title": "RECIBO DE PAGAMENTO",
+    "subtitle": "Comprovante de aluguel",
+    "tenant": "Inquilino",
+    "baseAmount": "Valor base",
+    "surcharge": "Multa/Taxa",
+    "discount": "Desconto",
+    "reason": "Motivo",
+    "totalPaid": "Total Pago",
+    "paymentDate": "Data do Pagamento",
+    "dueDate": "DATA DE VENCIMENTO",
+    "footer": "Este recibo certifica o pagamento do aluguel",
+    "download": "Baixar",
+    "copy": "Copiar",
+    "share": "Compartilhar",
+    "print": "Imprimir",
+    "generating": "Gerando...",
+    "back": "Voltar",
+    "imageCopied": "Imagem copiada! Cole no WhatsApp Web com Ctrl+V",
+    "copyError": "Não foi possível copiar. Use \"Baixar\" em vez disso.",
+    "shareError": "Seu navegador não suporta compartilhamento. Use \"Baixar\" ou \"Copiar\".",
+    "downloadError": "Erro ao gerar imagem"
+  }
+}

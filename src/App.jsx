@@ -7,6 +7,7 @@ import Layout from './components/layout/Layout';
 import ResetPassword from './components/auth/ResetPassword';
 import VerifyEmail from './components/auth/VerifyEmail';
 import { initGA, logPageView } from './utils/analytics';
+import { initSentry, SentryErrorBoundary } from './utils/sentry';
 
 // Lazy loading de vistas para code splitting
 const Dashboard = lazy(() => import('./components/views/Dashboard'));
@@ -18,6 +19,7 @@ const MonthlyIncomeView = lazy(() => import('./components/views/MonthlyIncomeVie
 const ExpensesView = lazy(() => import('./components/views/ExpensesView'));
 const TermsOfService = lazy(() => import('./components/legal/TermsOfService'));
 const PrivacyPolicy = lazy(() => import('./components/legal/PrivacyPolicy'));
+const SettingsView = lazy(() => import('./components/views/SettingsView'));
 
 // Componente de carga para Suspense
 const PageLoader = () => (
@@ -60,6 +62,7 @@ const ProtectedRoutes = ({ user, theme }) => {
         <Route path="/calendar" element={<CalendarView user={user} />} />
         <Route path="/income" element={<MonthlyIncomeView user={user} theme={theme} />} />
         <Route path="/expenses" element={<ExpensesView user={user} theme={theme} />} />
+        <Route path="/settings" element={<SettingsView user={user} theme={theme} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
@@ -72,9 +75,10 @@ const AppContent = () => {
   const [theme, setTheme] = useState('light');
   const location = useLocation();
 
-  // Inicializar Google Analytics
+  // Inicializar Google Analytics y Sentry
   useEffect(() => {
     initGA();
+    initSentry();
   }, []);
 
   // Registrar vistas de página
@@ -95,25 +99,27 @@ const AppContent = () => {
   }
 
   return (
-    <Suspense fallback={<PageLoader />}>
-      <Routes>
-        {/* Rutas públicas (accesibles sin login) */}
-        <Route path="/auth/action" element={<AuthActionHandler />} />
-        <Route path="/terms" element={<TermsOfService />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        
-        {/* Rutas protegidas o login */}
-        <Route path="/*" element={
-          user ? (
-            <Layout user={user} theme={theme} toggleTheme={toggleTheme}>
-              <ProtectedRoutes user={user} theme={theme} />
-            </Layout>
-          ) : (
-            <Auth />
-          )
-        } />
-      </Routes>
-    </Suspense>
+    <SentryErrorBoundary fallback={<p className="text-center p-4">Ha ocurrido un error inesperado.</p>}>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          {/* Rutas públicas (accesibles sin login) */}
+          <Route path="/auth/action" element={<AuthActionHandler />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          
+          {/* Rutas protegidas o login */}
+          <Route path="/*" element={
+            user ? (
+              <Layout user={user} theme={theme} toggleTheme={toggleTheme}>
+                <ProtectedRoutes user={user} theme={theme} />
+              </Layout>
+            ) : (
+              <Auth />
+            )
+          } />
+        </Routes>
+      </Suspense>
+    </SentryErrorBoundary>
   );
 };
 
