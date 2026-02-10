@@ -103,8 +103,8 @@ const PropertyDetail = ({ user }) => {
 
       switch (sortConfig.key) {
         case 'room':
-          aValue = a.roomNumber || 0;
-          bValue = b.roomNumber || 0;
+          aValue = parseInt(a.roomNumber) || 0;
+          bValue = parseInt(b.roomNumber) || 0;
           break;
         case 'rent':
           aValue = a.rentAmount || 0;
