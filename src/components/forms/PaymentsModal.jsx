@@ -32,6 +32,8 @@ const PaymentsModal = ({ user, tenant }) => {
   const [paymentToDelete, setPaymentToDelete] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [hasDebt, setHasDebt] = useState(false);
+  const [debtAmount, setDebtAmount] = useState('');
 
   const finalAmount = useMemo(() => {
     const base = parseInt(amount) || 0;
@@ -74,6 +76,7 @@ const PaymentsModal = ({ user, tenant }) => {
         amount: finalAmount,
         date: dateWithTime,
         dueDate: dueDateWithTime,
+        debt: hasDebt ? parseInt(debtAmount) : 0,
       };
 
       await addPayment(paymentData);
@@ -84,6 +87,8 @@ const PaymentsModal = ({ user, tenant }) => {
       setAdjustmentReason('');
       setAdjustmentType('none');
       setDueDate(getTodayFormatted());
+      setHasDebt(false);
+      setDebtAmount('');
     } catch (error) {
       logger.error('Error adding payment:', error);
     } finally {
@@ -246,6 +251,38 @@ const PaymentsModal = ({ user, tenant }) => {
           </div>
         )}
 
+        {/* Deuda Pendiente */}
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
+          <label className="flex items-center gap-3 mb-4 cursor-pointer w-fit">
+            <input 
+              type="checkbox"
+              checked={hasDebt}
+              onChange={e => {
+                setHasDebt(e.target.checked);
+                if (!e.target.checked) setDebtAmount('');
+              }}
+              className="w-5 h-5 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 dark:border-gray-600 dark:bg-gray-800"
+            />
+            <span className="font-medium text-gray-900 dark:text-white">
+              Debe
+            </span>
+          </label>
+
+          {hasDebt && (
+            <div className="animate-in slide-in-from-top-2 fade-in duration-300">
+              <Input
+                label="Monto que debe"
+                placeholder="0"
+                type="number"
+                value={debtAmount}
+                onChange={e => setDebtAmount(e.target.value)}
+                icon={AlertCircle}
+                required={hasDebt}
+              />
+            </div>
+          )}
+        </div>
+
         <div className="mt-6">
           <Button 
             type="submit" 
@@ -300,6 +337,12 @@ const PaymentsModal = ({ user, tenant }) => {
                     {payment.adjustmentType && (
                       <span className="text-xs text-gray-500 dark:text-gray-400">
                         ({t('payments.base')}: ${payment.baseAmount.toLocaleString('es-AR')} {payment.adjustmentType === 'surcharge' ? '+' : '-'}${payment.adjustment.toLocaleString('es-AR')})
+                      </span>
+                    )}
+                    {payment.debt > 0 && (
+                      <span className="text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        Debe: ${payment.debt.toLocaleString('es-AR')}
                       </span>
                     )}
                   </div>

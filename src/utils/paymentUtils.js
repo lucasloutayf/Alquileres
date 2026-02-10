@@ -14,20 +14,23 @@ export const getTenantPaymentStatus = (tenant, payments) => {
     // Si difDays >= 30, ya venció al menos 1 período
     if (diffDays < 30) {
       // Aún está en el primer período, pero no tiene pagos
-      return { status: 'noPayments', months: 0, lastPayment: null };
+      return { status: 'noPayments', months: 0, debtAmount: 0, lastPayment: null };
     }
     
     // Calcular cuántos períodos completos vencieron
     // Si pasaron 30-59 días, debe 1 mes
     // Si pasaron 60-89 días, debe 2 meses, etc.
     const monthsOverdue = Math.floor(diffDays / 30);
-    return { status: 'debt', months: monthsOverdue, lastPayment: null };
+    return { status: 'debt', months: monthsOverdue, debtAmount: 0, lastPayment: null };
   }
   
   // Ordenar pagos por fecha (más reciente primero)
   tenantPayments.sort((a, b) => new Date(b.date) - new Date(a.date));
   const lastPayment = tenantPayments[0];
   const lastPaymentDate = new Date(lastPayment.date);
+  
+  // Calcular deuda monetaria: sumar el campo "debt" de todos los pagos que tengan deuda
+  const totalDebtAmount = tenantPayments.reduce((sum, p) => sum + (p.debt || 0), 0);
   
   // Si el último pago tiene dueDate, verificar si pagó después de la fecha de vencimiento
   if (lastPayment.dueDate) {
@@ -40,13 +43,16 @@ export const getTenantPaymentStatus = (tenant, payments) => {
     const diffDays = Math.floor((today - dueDate) / (1000 * 60 * 60 * 24));
     
     if (diffDays <= 0) {
-      // Todavía no venció o pagó a tiempo
-      return { status: 'upToDate', months: 0, lastPayment: lastPaymentDate };
+      // Todavía no venció o pagó a tiempo, pero puede tener deuda monetaria
+      if (totalDebtAmount > 0) {
+        return { status: 'debt', months: 0, debtAmount: totalDebtAmount, lastPayment: lastPaymentDate };
+      }
+      return { status: 'upToDate', months: 0, debtAmount: 0, lastPayment: lastPaymentDate };
     }
     
     // Ya venció, calcular meses que debe
     const monthsOverdue = Math.floor(diffDays / 30) + 1;
-    return { status: 'debt', months: monthsOverdue, lastPayment: lastPaymentDate };
+    return { status: 'debt', months: monthsOverdue, debtAmount: totalDebtAmount, lastPayment: lastPaymentDate };
   }
   
   // Si no tiene dueDate, usar la lógica anterior basada en períodos desde entryDate
@@ -61,8 +67,12 @@ export const getTenantPaymentStatus = (tenant, payments) => {
   const monthsOverdue = periodsElapsed - paymentsMade;
   
   if (monthsOverdue <= 0) {
-    return { status: 'upToDate', months: 0, lastPayment: lastPaymentDate };
+    // Puede que no deba meses pero sí tenga deuda monetaria
+    if (totalDebtAmount > 0) {
+      return { status: 'debt', months: 0, debtAmount: totalDebtAmount, lastPayment: lastPaymentDate };
+    }
+    return { status: 'upToDate', months: 0, debtAmount: 0, lastPayment: lastPaymentDate };
   }
   
-  return { status: 'debt', months: monthsOverdue, lastPayment: lastPaymentDate };
+  return { status: 'debt', months: monthsOverdue, debtAmount: totalDebtAmount, lastPayment: lastPaymentDate };
 };

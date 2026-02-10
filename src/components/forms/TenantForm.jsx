@@ -236,8 +236,6 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
               <div key={field.id} className="flex items-center gap-2">
                 <input
                   type="text"
-                  value={field} 
-                  readOnly
                   {...register(`emergencyPhones.${index}`)}
                   className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300"
                 />

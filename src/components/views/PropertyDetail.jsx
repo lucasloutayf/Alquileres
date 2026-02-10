@@ -339,7 +339,11 @@ const PropertyDetail = ({ user }) => {
                             ? t('propertyDetail.status.upToDate')
                             : paymentStatus.status === 'noPayments'
                               ? t('propertyDetail.status.noPayments')
-                              : t('propertyDetail.status.late', { months: paymentStatus.months })
+                              : paymentStatus.months > 0 && paymentStatus.debtAmount > 0
+                                ? `Debe ${paymentStatus.months} mes(es) y $${paymentStatus.debtAmount.toLocaleString('es-AR')}`
+                                : paymentStatus.debtAmount > 0
+                                  ? `Debe $${paymentStatus.debtAmount.toLocaleString('es-AR')}`
+                                  : `Debe ${paymentStatus.months} mes(es)`
                           : t('propertyDetail.status.finished')}
                       </span>
                     </TableCell>

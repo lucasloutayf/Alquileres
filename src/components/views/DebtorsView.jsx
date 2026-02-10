@@ -4,6 +4,7 @@ import { getTenantPaymentStatus } from '../../utils/paymentUtils';
 import { AlertTriangle, DollarSign, ArrowLeft } from 'lucide-react';
 import { useTenants } from '../../hooks/useTenants';
 import { usePayments } from '../../hooks/usePayments';
+import { useProperties } from '../../hooks/useProperties';
 import Button from '../common/Button';
 import {
   Table,
@@ -23,17 +24,35 @@ const DebtorsView = ({ user }) => {
   const navigate = useNavigate();
   const { tenants, loading: tenantsLoading } = useTenants(user?.uid);
   const { payments, loading: paymentsLoading } = usePayments(user?.uid, { recent: true, days: 60 });
+  const { properties, loading: propertiesLoading } = useProperties(user?.uid);
 
-  const loading = tenantsLoading || paymentsLoading;
+  const loading = tenantsLoading || paymentsLoading || propertiesLoading;
+
+  // Helper para obtener el nombre de la propiedad de un inquilino
+  const getPropertyName = (tenant) => {
+    const property = properties.find(p => p.id === tenant.propertyId);
+    return property ? property.address : '';
+  };
 
   const debtors = tenants.filter(t => {
     if (t.contractStatus !== 'activo') return false;
     const status = getTenantPaymentStatus(t, payments);
     return status.status === 'debt';
   }).map(t => ({ ...t, paymentStatus: getTenantPaymentStatus(t, payments) }))
-    .sort((a,b) => b.paymentStatus.months - a.paymentStatus.months);
+    .sort((a, b) => {
+      // Priorizar por deuda monetaria, luego por meses
+      const debtDiff = b.paymentStatus.debtAmount - a.paymentStatus.debtAmount;
+      if (debtDiff !== 0) return debtDiff;
+      return b.paymentStatus.months - a.paymentStatus.months;
+    });
 
-  const totalDebt = debtors.reduce((sum, t) => sum + (t.rentAmount * t.paymentStatus.months), 0);
+  const totalDebt = debtors.reduce((sum, t) => {
+    // Si tiene deuda monetaria registrada, usar esa; si no, estimar por meses
+    if (t.paymentStatus.debtAmount > 0) {
+      return sum + t.paymentStatus.debtAmount;
+    }
+    return sum + (t.rentAmount * t.paymentStatus.months);
+  }, 0);
 
   if (loading) {
     return (
@@ -86,15 +105,14 @@ const DebtorsView = ({ user }) => {
                 <TableHead className="text-gray-500 dark:text-gray-400">{t('debtors.table.name')}</TableHead>
                 <TableHead className="text-gray-500 dark:text-gray-400">{t('debtors.table.phone')}</TableHead>
                 <TableHead className="text-gray-500 dark:text-gray-400">{t('debtors.table.room')}</TableHead>
-                <TableHead className="text-gray-500 dark:text-gray-400">{t('debtors.table.monthsOwed')}</TableHead>
-                <TableHead className="text-gray-500 dark:text-gray-400">{t('debtors.table.estimatedDebt')}</TableHead>
+                <TableHead className="text-gray-500 dark:text-gray-400">{t('debtors.table.debt')}</TableHead>
                 <TableHead className="text-gray-500 dark:text-gray-400">{t('debtors.table.lastPayment')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {debtors.length === 0 ? (
                 <TableRow className="border-0">
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <TableCell colSpan={5} className="text-center py-8 text-gray-500 dark:text-gray-400">
                     {t('debtors.table.empty')}
                   </TableCell>
                 </TableRow>
@@ -108,15 +126,26 @@ const DebtorsView = ({ user }) => {
                       {debtor.phone}
                     </TableCell>
                     <TableCell className="text-gray-600 dark:text-gray-400">
-                      {debtor.roomNumber}
+                      <div className="flex flex-col">
+                        <span>{t('debtors.table.roomLabel')} {debtor.roomNumber}</span>
+                        {getPropertyName(debtor) && (
+                          <span className="text-xs text-gray-400 dark:text-gray-500">{getPropertyName(debtor)}</span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300">
-                        {debtor.paymentStatus.months} {t('debtors.table.months')}
-                      </span>
-                    </TableCell>
-                    <TableCell className="font-semibold text-gray-900 dark:text-gray-100">
-                      ${(debtor.rentAmount * debtor.paymentStatus.months).toLocaleString('es-AR')}
+                      <div className="flex flex-col gap-1">
+                        {debtor.paymentStatus.debtAmount > 0 && (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                            ${debtor.paymentStatus.debtAmount.toLocaleString('es-AR')}
+                          </span>
+                        )}
+                        {debtor.paymentStatus.months > 0 && (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300">
+                            {debtor.paymentStatus.months} {t('debtors.table.months')}
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-gray-600 dark:text-gray-400">
                       {debtor.paymentStatus.lastPayment 
@@ -135,3 +164,4 @@ const DebtorsView = ({ user }) => {
 };
 
 export default DebtorsView;
+
