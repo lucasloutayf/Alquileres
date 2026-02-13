@@ -50,6 +50,17 @@ export const useReportGeneration = ({
         paymentStatus: getTenantPaymentStatus(t, allPayments)
       }));
 
+      // Inquilinos que pagaron este mes
+      const tenantsPaidIds = new Set(incomeData.map(p => p.tenantId));
+
+      // Inquilinos al día que NO pagaron este mes (pagaron adelantado)
+      // Son activos, NO están en deudores y NO están en los pagos del mes
+      const upToDateTenants = tenantsActive.filter(t => {
+        const isDebtor = debtorsList.some(d => d.id === t.id);
+        const paidThisMonth = tenantsPaidIds.has(t.id);
+        return !isDebtor && !paidThisMonth;
+      });
+
       const reportData = {
         month: currentMonth,
         year: currentYear,
@@ -57,7 +68,8 @@ export const useReportGeneration = ({
         expenses: expensesMonth,
         tenants: tenantsActive,
         properties,
-        debtors: debtorsList
+        debtors: debtorsList,
+        upToDateTenants // Nueva lista
       };
 
       const pdf = generateMonthlyReport(reportData);

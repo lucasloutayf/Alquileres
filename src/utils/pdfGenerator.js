@@ -120,6 +120,40 @@ export const generateMonthlyReport = (data) => {
     yPosition = doc.lastAutoTable.finalY + 10;
   }
 
+  // Inquilinos al día (sin pago este mes)
+  const safeUpToDate = arr(data.upToDateTenants);
+  
+  if (safeUpToDate.length > 0) {
+    if (yPosition > 230) {
+      doc.addPage();
+      yPosition = 20;
+    }
+
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Inquilinos al Día (Sin pago este mes)', 15, yPosition);
+    yPosition += 5;
+
+    const upToDateRows = safeUpToDate.map(tenant => [
+      tenant.name,
+      tenant.roomNumber || '-',
+      tenant.phone || '-',
+      'Al día'
+    ]);
+
+    autoTable(doc, {
+      startY: yPosition,
+      head: [['Inquilino', 'Habitación', 'Teléfono', 'Estado']],
+      body: upToDateRows,
+      theme: 'grid',
+      headStyles: { fillColor: [16, 185, 129], fontStyle: 'bold' }, // Emerald color
+      styles: { fontSize: 10 },
+      margin: { left: 15, right: 15 }
+    });
+
+    yPosition = doc.lastAutoTable.finalY + 10;
+  }
+
   // Tabla de gastos
   if (safeExpenses.length > 0) {
     if (yPosition > 230) {
@@ -168,14 +202,29 @@ export const generateMonthlyReport = (data) => {
     doc.text('Inquilinos con Deuda', 15, yPosition);
     yPosition += 5;
 
-    const debtorRows = safeDebtors.map(debtor => [
-      debtor.name,
-      debtor.phone,
-      `${debtor.paymentStatus?.months ?? '-'} mes(es)`,
-      debtor.rentAmount && debtor.paymentStatus?.months
-        ? `$${(debtor.rentAmount * debtor.paymentStatus.months).toLocaleString('es-AR')}`
-        : '-'
-    ]);
+    const debtorRows = safeDebtors.map(debtor => {
+      const months = debtor.paymentStatus?.months || 0;
+      const monetaryDebt = debtor.paymentStatus?.debtAmount || 0;
+      const rent = debtor.rentAmount || 0;
+      
+      const totalEstimatedDebt = (months * rent) + monetaryDebt;
+      
+      let monthsText = '-';
+      if (months > 0) {
+        monthsText = `${months} mes(es)${monetaryDebt > 0 ? ` + $${monetaryDebt.toLocaleString('es-AR')}` : ''}`;
+      } else if (monetaryDebt > 0) {
+        monthsText = 'Saldo impago';
+      }
+
+      return [
+        debtor.name,
+        debtor.phone,
+        monthsText,
+        totalEstimatedDebt > 0 
+          ? `$${totalEstimatedDebt.toLocaleString('es-AR')}`
+          : '-'
+      ];
+    });
 
     autoTable(doc, {
       startY: yPosition,
