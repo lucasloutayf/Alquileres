@@ -99,7 +99,7 @@ const Header = ({ user, theme, toggleTheme }) => {
               <Link to="/" className="flex items-center gap-2">
                 <Home className="w-6 h-6 text-emerald-600 dark:text-emerald-500 transition-all" />
                 <span className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
-                  GestorAlquileres
+                  Rentyo
                 </span>
               </Link>
             </div>
