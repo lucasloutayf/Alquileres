@@ -13,5 +13,6 @@ export const tenantSchema = z.object({
   entryDate: z.string().min(1, 'La fecha de entrada es obligatoria'),
   exitDate: z.string().optional().or(z.literal('')),
   contractStatus: z.enum(['activo', 'finalizado']),
-  propertyId: z.string().min(1, 'La propiedad es obligatoria')
+  propertyId: z.string().min(1, 'La propiedad es obligatoria'),
+  observations: z.string().optional()
 });

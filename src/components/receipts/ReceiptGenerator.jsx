@@ -167,6 +167,14 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
           </div>
         )}
 
+        {/* Observaciones */}
+        {payment.observations && (
+          <div className="mb-4 p-4 text-center bg-gray-50 rounded-lg border border-gray-100">
+            <p className="text-xs text-gray-500 uppercase font-semibold mb-1">{t('Observaciones')}</p>
+            <p className="text-gray-700 italic">"{payment.observations}"</p>
+          </div>
+        )}
+
         <div className="my-6 text-center bg-green-50 p-6 rounded-lg">
           <p className="text-gray-600 mb-2">{t('receipt.totalPaid')}</p>
           <p className="text-4xl md:text-5xl font-bold text-green-600 px-2">

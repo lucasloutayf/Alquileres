@@ -29,7 +29,8 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
       entryDate: getTodayFormatted(),
       exitDate: '',
       contractStatus: 'activo',
-      propertyId: propertyId
+      propertyId: propertyId,
+      observations: ''
     }
   });
 
@@ -50,7 +51,8 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
         entryDate: tenant.entryDate || getTodayFormatted(),
         exitDate: tenant.exitDate || '',
         contractStatus: tenant.contractStatus || 'activo',
-        propertyId: tenant.propertyId || propertyId
+        propertyId: tenant.propertyId || propertyId,
+        observations: tenant.observations || ''
       });
     } else {
       reset({
@@ -63,7 +65,8 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
         entryDate: getTodayFormatted(),
         exitDate: '',
         contractStatus: 'activo',
-        propertyId: propertyId
+        propertyId: propertyId,
+        observations: ''
       });
     }
   }, [tenant, propertyId, reset]);
@@ -223,6 +226,18 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
           <option value="activo">{t('propertyDetail.status.active')}</option>
           <option value="finalizado">{t('propertyDetail.status.finished')}</option>
         </select>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          {t('Observaciones')}
+        </label>
+        <textarea
+          {...register('observations')}
+          rows="3"
+          className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all resize-none"
+          placeholder={t('Observaciones')}
+        />
       </div>
 
       <div className="border-t border-gray-200 dark:border-gray-700 pt-5">

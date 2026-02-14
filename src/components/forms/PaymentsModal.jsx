@@ -34,6 +34,7 @@ const PaymentsModal = ({ user, tenant }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [hasDebt, setHasDebt] = useState(false);
   const [debtAmount, setDebtAmount] = useState('');
+  const [observations, setObservations] = useState('');
 
   const finalAmount = useMemo(() => {
     const base = parseInt(amount) || 0;
@@ -77,6 +78,7 @@ const PaymentsModal = ({ user, tenant }) => {
         date: dateWithTime,
         dueDate: dueDateWithTime,
         debt: hasDebt ? parseInt(debtAmount) : 0,
+        observations: observations.trim()
       };
 
       await addPayment(paymentData);
@@ -89,6 +91,7 @@ const PaymentsModal = ({ user, tenant }) => {
       setDueDate(getTodayFormatted());
       setHasDebt(false);
       setDebtAmount('');
+      setObservations('');
     } catch (error) {
       logger.error('Error adding payment:', error);
     } finally {
@@ -281,6 +284,20 @@ const PaymentsModal = ({ user, tenant }) => {
               />
             </div>
           )}
+
+        </div>
+
+        {/* Observaciones */}
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
+          <Input
+            label={t('Observaciones')}
+            placeholder={t('Observaciones')}
+            type="textarea"
+            value={observations}
+            onChange={e => setObservations(e.target.value)}
+            icon={FileText}
+            rows={3}
+          />
         </div>
 
         <div className="mt-6">
