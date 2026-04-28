@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { DollarSign, Home, TrendingDown, FileText, Trash2, Plus, Edit, ArrowLeft } from 'lucide-react';
+import { DollarSign, Home, TrendingDown, FileText, Trash2, Plus, Edit, ArrowLeft, TrendingUp, X, Check } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import StatCard3D from '../common/StatCard3D';
 import Modal from '../common/Modal';
@@ -75,6 +75,12 @@ const PropertyDetail = ({ user }) => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Bulk rent increase
+  const [bulkMode, setBulkMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [increaseAmount, setIncreaseAmount] = useState('');
+  const [isApplyingIncrease, setIsApplyingIncrease] = useState(false);
+
   const handleGenerateTenantReport = (tenant) => {
     try {
       const tenantPayments = (allPayments || []).filter(p => p.tenantId === tenant.id);
@@ -94,6 +100,55 @@ const PropertyDetail = ({ user }) => {
     }
     setSortConfig({ key, direction });
   };
+
+  const toggleBulkMode = () => {
+    setBulkMode(prev => !prev);
+    setSelectedIds(new Set());
+    setIncreaseAmount('');
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = (tenantsList) => {
+    if (selectedIds.size === tenantsList.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(tenantsList.map(t => t.id)));
+    }
+  };
+
+  const applyBulkIncrease = async (tenantsList) => {
+    const amount = parseFloat(increaseAmount);
+    if (!amount || amount <= 0) {
+      toast.error('Ingresá un monto de aumento válido');
+      return;
+    }
+    if (selectedIds.size === 0) {
+      toast.error('Seleccioná al menos un inquilino');
+      return;
+    }
+    setIsApplyingIncrease(true);
+    try {
+      const toUpdate = tenantsList.filter(t => selectedIds.has(t.id));
+      await Promise.all(
+        toUpdate.map(t => editTenant({ ...t, rentAmount: t.rentAmount + amount }))
+      );
+      toast.success(`Monto actualizado en ${toUpdate.length} inquilino(s)`);
+      toggleBulkMode();
+    } catch (err) {
+      logger.error('Error aplicando aumento:', err);
+      toast.error('Error al aplicar el aumento');
+    } finally {
+      setIsApplyingIncrease(false);
+    }
+  };
+
 
   const getSortedTenants = useCallback((tenantsToSort) => {
     if (!sortConfig.key) return tenantsToSort;
@@ -246,16 +301,80 @@ const PropertyDetail = ({ user }) => {
 
       {/* TABLA DE INQUILINOS */}
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
+        {/* Cabecera */}
+        <div className="flex flex-wrap justify-between items-center gap-3">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('propertyDetail.tenantsTitle')}</h2>
-          <Button 
-            variant="default"
-            onClick={() => { setEditingTenant(null); setModalOpen(true); }}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {t('propertyDetail.addTenant')}
-          </Button>
+          <div className="flex items-center gap-2">
+            {!bulkMode && (
+              <Button
+                variant="outline"
+                onClick={toggleBulkMode}
+                className="text-emerald-600 border-emerald-300 hover:bg-emerald-50 dark:text-emerald-400 dark:border-emerald-700 dark:hover:bg-emerald-900/20"
+              >
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Aumentar monto
+              </Button>
+            )}
+            {!bulkMode && (
+              <Button
+                variant="default"
+                onClick={() => { setEditingTenant(null); setModalOpen(true); }}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {t('propertyDetail.addTenant')}
+              </Button>
+            )}
+            {bulkMode && (
+              <Button variant="ghost" onClick={toggleBulkMode} className="text-gray-500">
+                <X className="w-4 h-4 mr-1" />
+                Cancelar
+              </Button>
+            )}
+          </div>
         </div>
+
+        {/* Toolbar bulk increase */}
+        {bulkMode && (
+          <div className="flex flex-wrap items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl">
+            <div className="flex items-center gap-2 shrink-0">
+              <input
+                type="checkbox"
+                id="select-all-tenants"
+                checked={propTenants.length > 0 && selectedIds.size === propTenants.length}
+                onChange={() => toggleSelectAll(propTenants)}
+                className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+              />
+              <label htmlFor="select-all-tenants" className="text-sm font-medium text-emerald-800 dark:text-emerald-200 cursor-pointer select-none whitespace-nowrap">
+                {selectedIds.size === propTenants.length && propTenants.length > 0
+                  ? 'Deseleccionar todo'
+                  : `Seleccionar todo (${propTenants.length})`}
+              </label>
+            </div>
+
+            <div className="flex items-center gap-2 flex-1 min-w-[180px]">
+              <span className="text-sm text-emerald-700 dark:text-emerald-300 shrink-0">Aumentar $</span>
+              <input
+                type="number"
+                min="0"
+                placeholder="ej: 5000"
+                value={increaseAmount}
+                onChange={e => setIncreaseAmount(e.target.value)}
+                className="flex-1 px-3 py-1.5 text-sm rounded-lg border border-emerald-300 dark:border-emerald-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+
+            <Button
+              onClick={() => applyBulkIncrease(propTenants)}
+              disabled={isApplyingIncrease || selectedIds.size === 0 || !increaseAmount}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 shrink-0"
+            >
+              <Check className="w-4 h-4 mr-1" />
+              {isApplyingIncrease
+                ? 'Aplicando...'
+                : `Aplicar${selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}`}
+            </Button>
+          </div>
+        )}
 
         {/* MÓVIL: lista de tarjetas */}
         <div className="md:hidden space-y-3">
@@ -319,17 +438,36 @@ const PropertyDetail = ({ user }) => {
               return (
                 <div
                   key={tenant.id}
-                  className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm"
+                  onClick={bulkMode ? () => toggleSelect(tenant.id) : undefined}
+                  className={`bg-white dark:bg-gray-800 rounded-xl border p-4 shadow-sm transition-colors ${
+                    bulkMode
+                      ? selectedIds.has(tenant.id)
+                        ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 cursor-pointer'
+                        : 'border-gray-200 dark:border-gray-700 cursor-pointer hover:border-emerald-300'
+                      : 'border-gray-200 dark:border-gray-700'
+                  }`}
                 >
-                  {/* Fila superior: nombre + badge estado */}
+                  {/* Fila superior: [checkbox] nombre + badge estado */}
                   <div className="flex items-start justify-between gap-2 mb-3">
-                    <p className="font-semibold text-gray-900 dark:text-white leading-tight">
-                      {tenant.name}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      {bulkMode && (
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(tenant.id)}
+                          onChange={() => toggleSelect(tenant.id)}
+                          onClick={e => e.stopPropagation()}
+                          className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
+                        />
+                      )}
+                      <p className="font-semibold text-gray-900 dark:text-white leading-tight">
+                        {tenant.name}
+                      </p>
+                    </div>
                     <span className={`shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusColor}`}>
                       {statusLabel}
                     </span>
                   </div>
+
 
                   {/* Fila de datos */}
                   <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-3">
@@ -388,6 +526,11 @@ const PropertyDetail = ({ user }) => {
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent border-b border-gray-200 dark:border-gray-700">
+                {bulkMode && (
+                  <TableHead className="w-10 text-gray-500 dark:text-gray-400">
+                    {/* header checkbox handled in bulk toolbar */}
+                  </TableHead>
+                )}
                 <TableHead className="text-gray-500 dark:text-gray-400">{t('propertyDetail.table.name')}</TableHead>
                 <TableHead
                   onClick={() => handleSort('room')}
@@ -428,7 +571,9 @@ const PropertyDetail = ({ user }) => {
                     )}
                   </div>
                 </TableHead>
-                <TableHead className="text-gray-500 dark:text-gray-400">{t('propertyDetail.table.actions')}</TableHead>
+                {!bulkMode && (
+                  <TableHead className="text-gray-500 dark:text-gray-400">{t('propertyDetail.table.actions')}</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -442,7 +587,28 @@ const PropertyDetail = ({ user }) => {
                 propTenants.map((tenant, index) => {
                   const paymentStatus = getTenantPaymentStatus(tenant, allPayments || []);
                   return (
-                    <TableRow key={tenant.id} transition={{ delay: index * 0.05 }} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700/50 last:border-0">
+                    <TableRow
+                      key={tenant.id}
+                      transition={{ delay: index * 0.05 }}
+                      onClick={bulkMode ? () => toggleSelect(tenant.id) : undefined}
+                      className={`border-b border-gray-100 dark:border-gray-700/50 last:border-0 ${
+                        bulkMode
+                          ? selectedIds.has(tenant.id)
+                            ? 'bg-emerald-50 dark:bg-emerald-900/20 cursor-pointer'
+                            : 'hover:bg-emerald-50/50 cursor-pointer'
+                          : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                      }`}
+                    >
+                      {bulkMode && (
+                        <TableCell className="w-10" onClick={e => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(tenant.id)}
+                            onChange={() => toggleSelect(tenant.id)}
+                            className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                          />
+                        </TableCell>
+                      )}
                       <TableCell className="font-medium text-gray-900 dark:text-white">
                         {tenant.name}
                       </TableCell>
@@ -479,42 +645,44 @@ const PropertyDetail = ({ user }) => {
                             : t('propertyDetail.status.finished')}
                         </span>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => handlePaymentClick(tenant)}
-                          >
-                            {t('common.payments')}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => { setEditingTenant(tenant); setModalOpen(true); }}
-                            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleGenerateTenantReport(tenant)}
-                            title="Descargar reporte"
-                            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                          >
-                            <FileText className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => { setItemToDelete(tenant); setConfirmModalOpen(true); }}
-                            title="Eliminar inquilino"
-                            className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/20"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
+                      <TableCell onClick={e => e.stopPropagation()}>
+                        {!bulkMode && (
+                          <div className="flex gap-2">
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => handlePaymentClick(tenant)}
+                            >
+                              {t('common.payments')}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => { setEditingTenant(tenant); setModalOpen(true); }}
+                              className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleGenerateTenantReport(tenant)}
+                              title="Descargar reporte"
+                              className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                            >
+                              <FileText className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => { setItemToDelete(tenant); setConfirmModalOpen(true); }}
+                              title="Eliminar inquilino"
+                              className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/20"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        )}
                       </TableCell>
                     </TableRow>
                   );
