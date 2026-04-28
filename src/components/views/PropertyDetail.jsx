@@ -79,6 +79,7 @@ const PropertyDetail = ({ user }) => {
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [increaseAmount, setIncreaseAmount] = useState('');
+  const [increaseSign, setIncreaseSign] = useState('+');
   const [isApplyingIncrease, setIsApplyingIncrease] = useState(false);
 
   const handleGenerateTenantReport = (tenant) => {
@@ -105,6 +106,7 @@ const PropertyDetail = ({ user }) => {
     setBulkMode(prev => !prev);
     setSelectedIds(new Set());
     setIncreaseAmount('');
+    setIncreaseSign('+');
   };
 
   const toggleSelect = (id) => {
@@ -124,26 +126,35 @@ const PropertyDetail = ({ user }) => {
   };
 
   const applyBulkIncrease = async (tenantsList) => {
-    const amount = parseFloat(increaseAmount);
-    if (!amount || amount <= 0) {
-      toast.error('Ingresá un monto de aumento válido');
+    const rawAmount = parseFloat(increaseAmount);
+    if (!rawAmount || rawAmount <= 0) {
+      toast.error('Ingresá un monto válido mayor a 0');
       return;
     }
     if (selectedIds.size === 0) {
       toast.error('Seleccioná al menos un inquilino');
       return;
     }
+    const delta = increaseSign === '+' ? rawAmount : -rawAmount;
     setIsApplyingIncrease(true);
     try {
       const toUpdate = tenantsList.filter(t => selectedIds.has(t.id));
+      const invalid = toUpdate.find(t => t.rentAmount + delta < 0);
+      if (invalid) {
+        toast.error(`El monto resultante sería negativo para "${invalid.name}"`);
+        setIsApplyingIncrease(false);
+        return;
+      }
       await Promise.all(
-        toUpdate.map(t => editTenant({ ...t, rentAmount: t.rentAmount + amount }))
+        toUpdate.map(t => editTenant({ ...t, rentAmount: t.rentAmount + delta }))
       );
-      toast.success(`Monto actualizado en ${toUpdate.length} inquilino(s)`);
+      toast.success(
+        `${increaseSign === '+' ? 'Aumento' : 'Reducción'} aplicado en ${toUpdate.length} inquilino(s)`
+      );
       toggleBulkMode();
     } catch (err) {
-      logger.error('Error aplicando aumento:', err);
-      toast.error('Error al aplicar el aumento');
+      logger.error('Error aplicando cambio:', err);
+      toast.error('Error al aplicar el cambio');
     } finally {
       setIsApplyingIncrease(false);
     }
@@ -352,7 +363,19 @@ const PropertyDetail = ({ user }) => {
             </div>
 
             <div className="flex items-center gap-2 flex-1 min-w-[180px]">
-              <span className="text-sm text-emerald-700 dark:text-emerald-300 shrink-0">Aumentar $</span>
+              {/* Toggle +/- */}
+              <button
+                onClick={() => setIncreaseSign(s => s === '+' ? '-' : '+')}
+                className={`shrink-0 w-9 h-9 rounded-lg text-base font-bold border-2 transition-colors ${
+                  increaseSign === '+'
+                    ? 'bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-600'
+                    : 'bg-rose-500 text-white border-rose-500 hover:bg-rose-600'
+                }`}
+                title={increaseSign === '+' ? 'Modo aumento (click para restar)' : 'Modo reducción (click para sumar)'}
+              >
+                {increaseSign}
+              </button>
+              <span className="text-sm text-emerald-700 dark:text-emerald-300 shrink-0">$</span>
               <input
                 type="number"
                 min="0"
