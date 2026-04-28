@@ -49,7 +49,7 @@ const StatCard3D = ({ title, value, icon, colorClass, trend }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       className={cn(
-        "relative rounded-xl p-6 overflow-hidden",
+        "relative rounded-xl p-3 md:p-6 overflow-hidden",
         "bg-gradient-to-br shadow-lg transition-all duration-200 ease-out",
         getColorClasses()
       )}
@@ -87,15 +87,15 @@ const StatCard3D = ({ title, value, icon, colorClass, trend }) => {
           )}
         </div>
         
-        <div className="mt-4">
+        <div className="mt-2 md:mt-4">
           <p className={cn(
-            "text-sm font-medium uppercase tracking-wider mb-1",
+            "text-xs md:text-sm font-medium uppercase tracking-wider mb-1",
             colorClass ? "text-white/80" : "text-gray-500 dark:text-gray-400"
           )}>
             {title}
           </p>
           <h3 className={cn(
-            "text-3xl font-bold tracking-tight font-display",
+            "text-xl md:text-3xl font-bold tracking-tight font-display",
             colorClass ? "text-white" : "text-gray-900 dark:text-white"
           )}>
             {value}

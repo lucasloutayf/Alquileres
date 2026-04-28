@@ -59,13 +59,29 @@ const DashboardStats = ({
     )
   }), [totalIncome, totalExpenses, activeTenants, debtors, t]);
 
+  const gridClass = "grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6";
+
+  // En móvil: grid estático sin drag
+  if (!isDesktop) {
+    return (
+      <div className={gridClass}>
+        {statsOrder.map(key => (
+          <div key={key}>
+            {statsComponents[key]}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // En desktop: grid draggable
   return (
     <div>
-      <Reorder.Group 
-        axis={isDesktop ? "x" : "y"} 
-        values={statsOrder} 
-        onReorder={setStatsOrder} 
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+      <Reorder.Group
+        axis="x"
+        values={statsOrder}
+        onReorder={setStatsOrder}
+        className={gridClass}
       >
         {statsOrder.map(key => (
           <Reorder.Item key={key} value={key} as="div" className="cursor-grab active:cursor-grabbing">

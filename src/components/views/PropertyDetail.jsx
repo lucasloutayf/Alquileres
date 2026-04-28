@@ -102,6 +102,10 @@ const PropertyDetail = ({ user }) => {
       let aValue, bValue;
 
       switch (sortConfig.key) {
+        case 'name':
+          return sortConfig.direction === 'asc'
+            ? a.name.localeCompare(b.name, 'es')
+            : b.name.localeCompare(a.name, 'es');
         case 'room':
           aValue = parseInt(a.roomNumber) || 0;
           bValue = parseInt(b.roomNumber) || 0;
@@ -253,12 +257,139 @@ const PropertyDetail = ({ user }) => {
           </Button>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
+        {/* MÓVIL: lista de tarjetas */}
+        <div className="md:hidden space-y-3">
+          {/* Barra de ordenamiento móvil */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium shrink-0">Ordenar:</span>
+            {[
+              { key: 'name',   label: 'Nombre' },
+              { key: 'room',   label: 'Habitación' },
+              { key: 'rent',   label: 'Alquiler' },
+              { key: 'status', label: 'Estado' },
+            ].map(({ key, label }) => {
+              const active = sortConfig.key === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => handleSort(key)}
+                  className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                    active
+                      ? 'bg-emerald-500 text-white border-emerald-500'
+                      : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-emerald-400'
+                  }`}
+                >
+                  {label}
+                  {active && (
+                    <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          {propTenants.length === 0 ? (
+            <p className="text-center py-8 text-gray-500 dark:text-gray-400">
+              {t('propertyDetail.noTenants')}
+            </p>
+          ) : (
+            propTenants.map((tenant) => {
+              const paymentStatus = getTenantPaymentStatus(tenant, allPayments || []);
+              const statusLabel = tenant.contractStatus === 'activo'
+                ? paymentStatus.status === 'upToDate'
+                  ? t('propertyDetail.status.upToDate')
+                  : paymentStatus.status === 'noPayments'
+                    ? t('propertyDetail.status.noPayments')
+                    : paymentStatus.months > 0 && paymentStatus.debtAmount > 0
+                      ? `Debe ${paymentStatus.months} mes(es) · $${paymentStatus.debtAmount.toLocaleString('es-AR')}`
+                      : paymentStatus.debtAmount > 0
+                        ? `Debe $${paymentStatus.debtAmount.toLocaleString('es-AR')}`
+                        : `Debe ${paymentStatus.months} mes(es)`
+                : t('propertyDetail.status.finished');
+
+              const statusColor = tenant.contractStatus === 'activo'
+                ? paymentStatus.status === 'upToDate'
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                  : paymentStatus.status === 'noPayments'
+                    ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                    : paymentStatus.months > 0
+                      ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
+                      : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
+
+              return (
+                <div
+                  key={tenant.id}
+                  className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm"
+                >
+                  {/* Fila superior: nombre + badge estado */}
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <p className="font-semibold text-gray-900 dark:text-white leading-tight">
+                      {tenant.name}
+                    </p>
+                    <span className={`shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusColor}`}>
+                      {statusLabel}
+                    </span>
+                  </div>
+
+                  {/* Fila de datos */}
+                  <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-3">
+                    <span>Hab. <strong className="text-gray-900 dark:text-white">{tenant.roomNumber}</strong></span>
+                    <span>•</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">
+                      ${tenant.rentAmount.toLocaleString('es-AR')}
+                    </span>
+                  </div>
+
+                  {/* Acciones */}
+                  <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handlePaymentClick(tenant)}
+                      className="flex-1"
+                    >
+                      {t('common.payments')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => { setEditingTenant(tenant); setModalOpen(true); }}
+                      className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleGenerateTenantReport(tenant)}
+                      title="Descargar reporte"
+                      className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                    >
+                      <FileText className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => { setItemToDelete(tenant); setConfirmModalOpen(true); }}
+                      title="Eliminar inquilino"
+                      className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/20"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* DESKTOP: tabla clásica */}
+        <div className="hidden md:block bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent border-b border-gray-200 dark:border-gray-700">
                 <TableHead className="text-gray-500 dark:text-gray-400">{t('propertyDetail.table.name')}</TableHead>
-                <TableHead 
+                <TableHead
                   onClick={() => handleSort('room')}
                   className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors select-none text-gray-500 dark:text-gray-400"
                 >
@@ -271,7 +402,7 @@ const PropertyDetail = ({ user }) => {
                     )}
                   </div>
                 </TableHead>
-                <TableHead 
+                <TableHead
                   onClick={() => handleSort('rent')}
                   className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors select-none text-gray-500 dark:text-gray-400"
                 >
@@ -284,7 +415,7 @@ const PropertyDetail = ({ user }) => {
                     )}
                   </div>
                 </TableHead>
-                <TableHead 
+                <TableHead
                   onClick={() => handleSort('status')}
                   className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors select-none text-gray-500 dark:text-gray-400"
                 >
@@ -300,101 +431,97 @@ const PropertyDetail = ({ user }) => {
                 <TableHead className="text-gray-500 dark:text-gray-400">{t('propertyDetail.table.actions')}</TableHead>
               </TableRow>
             </TableHeader>
-
-          <TableBody>
-            {propTenants.length === 0 ? (
-              <TableRow className="border-0">
-                <TableCell colSpan={5} className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  {t('propertyDetail.noTenants')}
-                </TableCell>
-              </TableRow>
-            ) : (
-              propTenants.map((tenant, index) => {
-                const paymentStatus = getTenantPaymentStatus(tenant, allPayments || []);
-                return (
-                  <TableRow key={tenant.id} transition={{ delay: index * 0.05 }} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700/50 last:border-0">
-                    <TableCell className="font-medium text-gray-900 dark:text-white">
-                      {tenant.name}
-                    </TableCell>
-                    <TableCell className="text-gray-600 dark:text-gray-400">
-                      {tenant.roomNumber}
-                    </TableCell>
-                    <TableCell className="font-semibold text-gray-900 dark:text-white">
-                      ${tenant.rentAmount.toLocaleString('es-AR')}
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          tenant.contractStatus === 'activo'
+            <TableBody>
+              {propTenants.length === 0 ? (
+                <TableRow className="border-0">
+                  <TableCell colSpan={5} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    {t('propertyDetail.noTenants')}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                propTenants.map((tenant, index) => {
+                  const paymentStatus = getTenantPaymentStatus(tenant, allPayments || []);
+                  return (
+                    <TableRow key={tenant.id} transition={{ delay: index * 0.05 }} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700/50 last:border-0">
+                      <TableCell className="font-medium text-gray-900 dark:text-white">
+                        {tenant.name}
+                      </TableCell>
+                      <TableCell className="text-gray-600 dark:text-gray-400">
+                        {tenant.roomNumber}
+                      </TableCell>
+                      <TableCell className="font-semibold text-gray-900 dark:text-white">
+                        ${tenant.rentAmount.toLocaleString('es-AR')}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            tenant.contractStatus === 'activo'
+                              ? paymentStatus.status === 'upToDate'
+                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                                : paymentStatus.status === 'noPayments'
+                                  ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                                  : paymentStatus.months > 0
+                                    ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
+                                    : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                              : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                          }`}
+                        >
+                          {tenant.contractStatus === 'activo'
                             ? paymentStatus.status === 'upToDate'
-                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                              ? t('propertyDetail.status.upToDate')
                               : paymentStatus.status === 'noPayments'
-                                ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                                : paymentStatus.months > 0
-                                  ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
-                                  : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                        }`}
-                      >
-                        {tenant.contractStatus === 'activo'
-                          ? paymentStatus.status === 'upToDate'
-                            ? t('propertyDetail.status.upToDate')
-                            : paymentStatus.status === 'noPayments'
-                              ? t('propertyDetail.status.noPayments')
-                              : paymentStatus.months > 0 && paymentStatus.debtAmount > 0
-                                ? `Debe ${paymentStatus.months} mes(es) y $${paymentStatus.debtAmount.toLocaleString('es-AR')}`
-                                : paymentStatus.debtAmount > 0
-                                  ? `Debe $${paymentStatus.debtAmount.toLocaleString('es-AR')}`
-                                  : `Debe ${paymentStatus.months} mes(es)`
-                          : t('propertyDetail.status.finished')}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="secondary" 
-                          size="sm"
-                          onClick={() => handlePaymentClick(tenant)}
-                        >
-                          {t('common.payments')}
-                        </Button>
-
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          onClick={() => { setEditingTenant(tenant); setModalOpen(true); }}
-                          className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          onClick={() => handleGenerateTenantReport(tenant)}
-                          title="Descargar reporte"
-                          className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                        >
-                          <FileText className="w-4 h-4" />
-                        </Button>
-                        
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          onClick={() => { setItemToDelete(tenant); setConfirmModalOpen(true); }}
-                          title="Eliminar inquilino"
-                          className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/20"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
+                                ? t('propertyDetail.status.noPayments')
+                                : paymentStatus.months > 0 && paymentStatus.debtAmount > 0
+                                  ? `Debe ${paymentStatus.months} mes(es) y $${paymentStatus.debtAmount.toLocaleString('es-AR')}`
+                                  : paymentStatus.debtAmount > 0
+                                    ? `Debe $${paymentStatus.debtAmount.toLocaleString('es-AR')}`
+                                    : `Debe ${paymentStatus.months} mes(es)`
+                            : t('propertyDetail.status.finished')}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => handlePaymentClick(tenant)}
+                          >
+                            {t('common.payments')}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => { setEditingTenant(tenant); setModalOpen(true); }}
+                            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleGenerateTenantReport(tenant)}
+                            title="Descargar reporte"
+                            className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                          >
+                            <FileText className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => { setItemToDelete(tenant); setConfirmModalOpen(true); }}
+                            title="Eliminar inquilino"
+                            className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/20"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
 

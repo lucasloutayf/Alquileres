@@ -221,7 +221,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
           className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-600 dark:hover:bg-blue-700 shadow-none"
           icon={<Download className="w-5 h-5" />}
         >
-          <span className="hidden sm:inline">{t('receipt.download')}</span>
+          {t('receipt.download')}
         </Button>
         
         <Button 
@@ -229,7 +229,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
           className="bg-purple-600 hover:bg-purple-700 text-white dark:bg-purple-600 dark:hover:bg-purple-700 shadow-none"
           icon={<Copy className="w-5 h-5" />}
         >
-          <span className="hidden sm:inline">{t('receipt.copy')}</span>
+          {t('receipt.copy')}
         </Button>
         
         <Button 
@@ -238,7 +238,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
           className="bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700 shadow-none"
           icon={isSharing ? <Clock className="w-5 h-5 animate-spin" /> : <Share2 className="w-5 h-5" />}
         >
-          <span className="hidden sm:inline">{isSharing ? t('receipt.generating') : t('receipt.share')}</span>
+          {isSharing ? t('receipt.generating') : t('receipt.share')}
         </Button>
         
         <Button 
@@ -246,7 +246,7 @@ const ReceiptGenerator = ({ payment, tenant, onClose }) => {
           className="bg-gray-600 hover:bg-gray-700 text-white dark:bg-gray-600 dark:hover:bg-gray-700 shadow-none"
           icon={<Printer className="w-5 h-5" />}
         >
-          <span className="hidden sm:inline">{t('receipt.print')}</span>
+          {t('receipt.print')}
         </Button>
       </div>
 
