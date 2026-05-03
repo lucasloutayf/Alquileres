@@ -1,11 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { tenantSchema } from '../../schemas/tenantSchema';
-import Button from '../common/Button';
 import { Plus, Trash2 } from 'lucide-react';
-import { getTodayFormatted } from '../../utils/dateUtils';
 import { useTranslation } from 'react-i18next';
+import { tenantSchema } from '../../schemas/tenantSchema';
+import { getTodayFormatted } from '../../utils/dateUtils';
+import Button from '../common/Button';
+import Input from '../common/Input';
+
+const buildDefaults = (tenant, propertyId) => ({
+  name: tenant?.name || '',
+  dni: tenant?.dni || '',
+  phone: tenant?.phone || '',
+  emergencyPhones: tenant?.emergencyPhones || [],
+  roomNumber: tenant?.roomNumber || '',
+  rentAmount: tenant?.rentAmount || '',
+  entryDate: tenant?.entryDate || getTodayFormatted(),
+  exitDate: tenant?.exitDate || '',
+  contractStatus: tenant?.contractStatus || 'activo',
+  propertyId: tenant?.propertyId || propertyId,
+  observations: tenant?.observations || '',
+});
 
 const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
   const { t } = useTranslation();
@@ -19,57 +34,19 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
     formState: { errors, isSubmitting }
   } = useForm({
     resolver: zodResolver(tenantSchema),
-    defaultValues: {
-      name: '',
-      dni: '',
-      phone: '',
-      emergencyPhones: [],
-      roomNumber: '',
-      rentAmount: '',
-      entryDate: getTodayFormatted(),
-      exitDate: '',
-      contractStatus: 'activo',
-      propertyId: propertyId,
-      observations: ''
-    }
+    defaultValues: buildDefaults(null, propertyId),
   });
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "emergencyPhones"
+    name: 'emergencyPhones'
   });
 
   useEffect(() => {
-    if (tenant) {
-      reset({
-        name: tenant.name || '',
-        dni: tenant.dni || '',
-        phone: tenant.phone || '',
-        emergencyPhones: tenant.emergencyPhones || [],
-        roomNumber: tenant.roomNumber || '',
-        rentAmount: tenant.rentAmount || '',
-        entryDate: tenant.entryDate || getTodayFormatted(),
-        exitDate: tenant.exitDate || '',
-        contractStatus: tenant.contractStatus || 'activo',
-        propertyId: tenant.propertyId || propertyId,
-        observations: tenant.observations || ''
-      });
-    } else {
-      reset({
-        name: '',
-        dni: '',
-        phone: '',
-        emergencyPhones: [],
-        roomNumber: '',
-        rentAmount: '',
-        entryDate: getTodayFormatted(),
-        exitDate: '',
-        contractStatus: 'activo',
-        propertyId: propertyId,
-        observations: ''
-      });
-    }
+    reset(buildDefaults(tenant, propertyId));
   }, [tenant, propertyId, reset]);
+
+  const errorMessage = (field) => errors[field]?.message || (errors[field] ? t('validation.required') : undefined);
 
   const handleAddEmergencyPhone = (e) => {
     e?.preventDefault();
@@ -79,140 +56,63 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
     }
   };
 
-  const onFormSubmit = async (data) => {
-    await onSave(data);
-  };
-
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-5">
+    <form onSubmit={handleSubmit(onSave)} className="space-y-5">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t('forms.tenant.name')} <span className="text-rose-500">*</span>
-          </label>
-          <input
-            type="text"
-            {...register('name')}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              errors.name 
-                ? 'border-rose-500 focus:ring-rose-500' 
-                : 'border-gray-200 dark:border-gray-700 focus:ring-emerald-500'
-            } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:border-transparent outline-none transition-all`}
-            placeholder={t('forms.tenant.name')}
-          />
-          {errors.name && (
-            <p className="text-sm text-rose-500 mt-1">{t('validation.required')}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t('forms.tenant.dni')} <span className="text-rose-500">*</span>
-          </label>
-          <input
-            type="text"
-            {...register('dni')}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              errors.dni 
-                ? 'border-rose-500 focus:ring-rose-500' 
-                : 'border-gray-200 dark:border-gray-700 focus:ring-emerald-500'
-            } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:border-transparent outline-none transition-all`}
-            placeholder="12345678"
-          />
-          {errors.dni && (
-            <p className="text-sm text-rose-500 mt-1">{t('validation.required')}</p>
-          )}
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {t('forms.tenant.phone')} <span className="text-rose-500">*</span>
-        </label>
-        <input
-          type="tel"
-          {...register('phone')}
-          className={`w-full px-4 py-2 rounded-lg border ${
-            errors.phone 
-              ? 'border-rose-500 focus:ring-rose-500' 
-              : 'border-gray-200 dark:border-gray-700 focus:ring-emerald-500'
-          } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:border-transparent outline-none transition-all`}
-          placeholder={t('forms.tenant.phonePlaceholder')}
+        <Input
+          label={t('forms.tenant.name')}
+          type="text"
+          placeholder={t('forms.tenant.name')}
+          error={errorMessage('name')}
+          {...register('name')}
         />
-        {errors.phone && (
-          <p className="text-sm text-rose-500 mt-1">{t('validation.required')}</p>
-        )}
+        <Input
+          label={t('forms.tenant.dni')}
+          type="text"
+          placeholder="12345678"
+          error={errorMessage('dni')}
+          {...register('dni')}
+        />
+      </div>
+
+      <Input
+        label={t('forms.tenant.phone')}
+        type="tel"
+        placeholder={t('forms.tenant.phonePlaceholder')}
+        error={errorMessage('phone')}
+        {...register('phone')}
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Input
+          label={t('forms.tenant.room')}
+          type="text"
+          placeholder="12"
+          error={errorMessage('roomNumber')}
+          {...register('roomNumber')}
+        />
+        <Input
+          label={t('forms.tenant.rent')}
+          type="number"
+          placeholder="70000"
+          error={errorMessage('rentAmount')}
+          {...register('rentAmount', { valueAsNumber: true })}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t('forms.tenant.room')} <span className="text-rose-500">*</span>
-          </label>
-          <input
-            type="text"
-            {...register('roomNumber')}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              errors.roomNumber 
-                ? 'border-rose-500 focus:ring-rose-500' 
-                : 'border-gray-200 dark:border-gray-700 focus:ring-emerald-500'
-            } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:border-transparent outline-none transition-all`}
-            placeholder="12"
-          />
-          {errors.roomNumber && (
-            <p className="text-sm text-rose-500 mt-1">{t('validation.required')}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t('forms.tenant.rent')} <span className="text-rose-500">*</span>
-          </label>
-          <input
-            type="number"
-            {...register('rentAmount', { valueAsNumber: true })}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              errors.rentAmount 
-                ? 'border-rose-500 focus:ring-rose-500' 
-                : 'border-gray-200 dark:border-gray-700 focus:ring-emerald-500'
-            } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:border-transparent outline-none transition-all`}
-            placeholder="70000"
-          />
-          {errors.rentAmount && (
-            <p className="text-sm text-rose-500 mt-1">{t('validation.required')}</p>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t('forms.tenant.entryDate')} <span className="text-rose-500">*</span>
-          </label>
-          <input
-            type="date"
-            {...register('entryDate')}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              errors.entryDate 
-                ? 'border-rose-500 focus:ring-rose-500' 
-                : 'border-gray-200 dark:border-gray-700 focus:ring-emerald-500'
-            } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:border-transparent outline-none transition-all`}
-          />
-          {errors.entryDate && (
-            <p className="text-sm text-rose-500 mt-1">{t('validation.required')}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t('forms.tenant.exitDate')}
-          </label>
-          <input
-            type="date"
-            {...register('exitDate')}
-            className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
-          />
-        </div>
+        <Input
+          label={t('forms.tenant.entryDate')}
+          type="date"
+          error={errorMessage('entryDate')}
+          {...register('entryDate')}
+        />
+        <Input
+          label={t('forms.tenant.exitDate')}
+          type="date"
+          error={errorMessage('exitDate')}
+          {...register('exitDate')}
+        />
       </div>
 
       <div>
@@ -230,13 +130,13 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {t('Observaciones')}
+          {t('forms.tenant.observations')}
         </label>
         <textarea
           {...register('observations')}
           rows="3"
           className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all resize-none"
-          placeholder={t('Observaciones')}
+          placeholder={t('forms.tenant.observationsPlaceholder')}
         />
       </div>
 
@@ -291,7 +191,7 @@ const TenantForm = ({ tenant, propertyId, onSave, onCancel }) => {
             {t('forms.tenant.addPhone')}
           </Button>
         </div>
-        
+
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
           {t('forms.tenant.enterToAdd')}
         </p>

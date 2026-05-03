@@ -1,8 +1,8 @@
 export const EXPENSE_CATEGORIES = [
-  "Mantenimiento", 
-  "Servicios", 
-  "Impuestos", 
-  "Administrativo", 
+  "Mantenimiento",
+  "Servicios",
+  "Impuestos",
+  "Administrativo",
   "Otros"
 ];
 
@@ -20,4 +20,10 @@ export const ADJUSTMENT_TYPES = {
 export const PAYMENT_STATUS = {
   UP_TO_DATE: 'upToDate',
   DEBT: 'debt'
+};
+
+export const DEFAULT_PAGE_SIZE = 10;
+
+export const STORAGE_KEYS = {
+  DASHBOARD_STATS_ORDER: 'dashboard_stats_order'
 };

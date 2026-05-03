@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useAuthActions } from '../hooks/useAuthActions';
-import AuthCard from './auth/AuthCard';
-import LoginForm from './auth/LoginForm';
-import ResetPasswordForm from './auth/ResetPasswordForm';
-import ResetPasswordSent from './auth/ResetPasswordSent';
-import VerifyEmailPending from './auth/VerifyEmailPending';
+import { useAuthActions } from '../../hooks/useAuthActions';
+import AuthCard from './AuthCard';
+import LoginForm from './LoginForm';
+import ResetPasswordForm from './ResetPasswordForm';
+import ResetPasswordSent from './ResetPasswordSent';
+import VerifyEmailPending from './VerifyEmailPending';
 
 // Icono de Google (SVG inline para evitar dependencias externas)
 const GoogleIcon = (

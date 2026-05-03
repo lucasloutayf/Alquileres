@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
 import Button from '../../common/Button';
-import PropertyCard from '../../properties/PropertyCard';
+import PropertyCard from '../../common/PropertyCard';
 import { useTranslation } from 'react-i18next';
 
 /**

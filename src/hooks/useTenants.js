@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
-import { 
-  getTenants, 
+import {
+  getTenants,
   addTenant as addTenantFirestore,
   updateTenant as updateTenantFirestore,
   deleteTenant as deleteTenantFirestore
 } from '../firebase/firestore';
+import { runFirestoreAction } from '../utils/firestoreActions';
 
 export const useTenants = (userId) => {
   const [tenants, setTenants] = useState([]);
@@ -25,38 +25,26 @@ export const useTenants = (userId) => {
     return () => unsubscribe();
   }, [userId]);
 
-  const addTenant = async (tenantData) => {
-    if (!userId) {
-      toast.error('Error: Usuario no autenticado');
-      return;
-    }
-    try {
-      await addTenantFirestore(tenantData, userId);
-      toast.success('Inquilino agregado correctamente');
-    } catch (error) {
-      toast.error('Error al agregar inquilino: ' + error.message);
-    }
+  const addTenant = (tenantData) =>
+    runFirestoreAction(() => addTenantFirestore(tenantData, userId), {
+      userId,
+      successMsg: 'Inquilino agregado correctamente',
+      errorMsg: 'Error al agregar inquilino',
+    });
+
+  const editTenant = (updatedTenant) => {
+    const { id, ...data } = updatedTenant;
+    return runFirestoreAction(() => updateTenantFirestore(id, data), {
+      successMsg: 'Inquilino actualizado correctamente',
+      errorMsg: 'Error al editar inquilino',
+    });
   };
 
-  const editTenant = async (updatedTenant) => {
-    try {
-      const { id, ...data } = updatedTenant;
-      await updateTenantFirestore(id, data);
-      toast.success('Inquilino actualizado correctamente');
-    } catch (error) {
-      toast.error('Error al editar inquilino: ' + error.message);
-    }
-  };
-
-  const deleteTenant = async (tenantId) => {
-    try {
-      // El borrado en cascada de pagos ahora se maneja en el servidor (atomic)
-      await deleteTenantFirestore(tenantId);
-      toast.success('Inquilino eliminado correctamente');
-    } catch (error) {
-      toast.error('Error al eliminar inquilino: ' + error.message);
-    }
-  };
+  const deleteTenant = (tenantId) =>
+    runFirestoreAction(() => deleteTenantFirestore(tenantId), {
+      successMsg: 'Inquilino eliminado correctamente',
+      errorMsg: 'Error al eliminar inquilino',
+    });
 
   return {
     tenants,

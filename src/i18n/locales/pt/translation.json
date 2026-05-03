@@ -33,7 +33,9 @@
       "emergencyPhones": "Telefones de Emergência",
       "addPhone": "Adicionar",
       "phonePlaceholder": "+55 11 91234-5678",
-      "enterToAdd": "Pressione Enter ou clique em Adicionar"
+      "enterToAdd": "Pressione Enter ou clique em Adicionar",
+      "observations": "Observações",
+      "observationsPlaceholder": "Notas adicionais sobre o inquilino"
     },
     "expense": {
       "description": "Descrição",

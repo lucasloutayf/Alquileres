@@ -1,8 +1,8 @@
 import React from 'react';
 import { Edit, Trash2, Users, DollarSign, MapPin } from 'lucide-react';
-import { Card, CardContent } from '../common/Card';
-import Button from '../common/Button';
-import PropertyIcon from '../common/PropertyIcon';
+import { Card, CardContent } from './Card';
+import Button from './Button';
+import PropertyIcon from './PropertyIcon';
 import { cn } from '../../utils/cn';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';

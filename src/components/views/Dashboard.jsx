@@ -25,6 +25,7 @@ import PropertyForm from '../forms/PropertyForm';
 
 // Utils
 import { logger } from '../../utils/logger';
+import { STORAGE_KEYS } from '../../utils/constants';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -103,7 +104,7 @@ const Dashboard = ({ user, theme }) => {
 
   // Estado para el orden de las tarjetas de estadísticas
   const [statsOrder, setStatsOrder] = useState(() => {
-    const saved = localStorage.getItem('dashboard_stats_order');
+    const saved = localStorage.getItem(STORAGE_KEYS.DASHBOARD_STATS_ORDER);
     return saved ? JSON.parse(saved) : ['income', 'expenses', 'tenants', 'debtors'];
   });
 
@@ -118,7 +119,7 @@ const Dashboard = ({ user, theme }) => {
 
   // Persistir orden de stats
   useEffect(() => {
-    localStorage.setItem('dashboard_stats_order', JSON.stringify(statsOrder));
+    localStorage.setItem(STORAGE_KEYS.DASHBOARD_STATS_ORDER, JSON.stringify(statsOrder));
   }, [statsOrder]);
 
   // Parallax Effect

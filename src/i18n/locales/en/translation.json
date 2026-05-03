@@ -33,7 +33,9 @@
       "emergencyPhones": "Emergency Contact Phones",
       "addPhone": "Add",
       "phonePlaceholder": "+1 555 123 4567",
-      "enterToAdd": "Press Enter or click Add to include a phone number"
+      "enterToAdd": "Press Enter or click Add to include a phone number",
+      "observations": "Observations",
+      "observationsPlaceholder": "Additional notes about the tenant"
     },
     "expense": {
       "description": "Description",

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
-import { 
-  getProperties, 
+import {
+  getProperties,
   addProperty as addPropertyFirestore,
   updateProperty as updatePropertyFirestore,
   deleteProperty as deletePropertyFirestore
 } from '../firebase/firestore';
+import { runFirestoreAction } from '../utils/firestoreActions';
 
 export const useProperties = (userId) => {
   const [properties, setProperties] = useState([]);
@@ -25,39 +25,26 @@ export const useProperties = (userId) => {
     return () => unsubscribe();
   }, [userId]);
 
-  const addProperty = async (propertyData) => {
-    if (!userId) {
-      toast.error('Error: Usuario no autenticado');
-      return;
-    }
-    try {
-      await addPropertyFirestore(propertyData, userId);
-      toast.success('Propiedad agregada correctamente');
-    } catch (error) {
-      toast.error('Error al agregar propiedad: ' + error.message);
-    }
+  const addProperty = (propertyData) =>
+    runFirestoreAction(() => addPropertyFirestore(propertyData, userId), {
+      userId,
+      successMsg: 'Propiedad agregada correctamente',
+      errorMsg: 'Error al agregar propiedad',
+    });
+
+  const editProperty = (propertyData) => {
+    const { id, ...data } = propertyData;
+    return runFirestoreAction(() => updatePropertyFirestore(id, data), {
+      successMsg: 'Propiedad actualizada correctamente',
+      errorMsg: 'Error al editar propiedad',
+    });
   };
 
-  const editProperty = async (propertyData) => {
-    try {
-      const { id, ...data } = propertyData;
-      await updatePropertyFirestore(id, data);
-      toast.success('Propiedad actualizada correctamente');
-    } catch (error) {
-      toast.error('Error al editar propiedad: ' + error.message);
-    }
-  };
-
-  const deleteProperty = async (propertyId) => {
-    try {
-      // Nota: La validación de inquilinos activos debe hacerse en el componente
-      // antes de llamar a esta función, ya que este hook no conoce a los inquilinos.
-      await deletePropertyFirestore(propertyId);
-      toast.success('Propiedad eliminada correctamente');
-    } catch (error) {
-      toast.error('Error al eliminar propiedad: ' + error.message);
-    }
-  };
+  const deleteProperty = (propertyId) =>
+    runFirestoreAction(() => deletePropertyFirestore(propertyId), {
+      successMsg: 'Propiedad eliminada correctamente',
+      errorMsg: 'Error al eliminar propiedad',
+    });
 
   return {
     properties,
